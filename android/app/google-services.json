@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "240272622591",
+    "project_id": "g4-academie",
+    "storage_bucket": "g4-academie.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:240272622591:android:cd9c638df3abffdf78ddca",
+        "android_client_info": {
+          "package_name": "com.example.g4_academie"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBE8aiJz91HSc-OB1Kmdsoq4p0PC8y7VII"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
