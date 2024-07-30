@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:g4_academie/constants.dart';
 import 'package:g4_academie/screens/auth_screen/google_signup_screen.dart';
 import 'package:g4_academie/screens/auth_screen/signin_screen.dart';
-import 'package:g4_academie/screens/dashboard_screens/home_screnn.dart';
+import 'package:g4_academie/services/auth_services.dart';
+import 'package:g4_academie/users.dart';
 
 import '../../app_UI.dart';
+import '../../services/verification.dart';
 import '../../theme/theme.dart';
 import '../../widgets/custom_scaffold.dart';
 
@@ -24,6 +26,16 @@ class _SignUpScreenState extends State<SignUpScreen>
 
   late TabController _tabController;
   String _countriesNumber = "+229";
+  List<String>? subject = [];
+  AppUser? _appUser;
+
+  final TextEditingController nomController = TextEditingController();
+  final TextEditingController prenomController = TextEditingController();
+  final TextEditingController adresseController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController phoneNumberController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController rePasswordController = TextEditingController();
 
   @override
   void initState() {
@@ -105,6 +117,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                               padding: const EdgeInsets.only(bottom: 20),
                             ),
                             TextFormField(
+                              controller: nomController,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return 'Entrez votre nom';
@@ -137,6 +150,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                               height: 25.0,
                             ),
                             TextFormField(
+                              controller: prenomController,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return 'Entrez votre/vos prénom(s)';
@@ -169,9 +183,13 @@ class _SignUpScreenState extends State<SignUpScreen>
                               height: 25.0,
                             ),
                             TextFormField(
+                              controller: adresseController,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return 'Entrez votre adresse';
+                                } else if (!isValidAddress(
+                                    adresseController.text)) {
+                                  return 'Format requis : ville ou village/Quartier';
                                 }
                                 return null;
                               },
@@ -235,6 +253,67 @@ class _SignUpScreenState extends State<SignUpScreen>
                                 },
                               ),
                             ),
+
+                            if (_selectedUserType == usersType[1])
+                              const SizedBox(
+                                height: 25.0,
+                              ),
+                            if (_selectedUserType == usersType[1])
+                              Container(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 20),
+                                width: width,
+                                height: subject != [] && subject!.length < 2
+                                    ? 60
+                                    : 100,
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.black26),
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(10)),
+                                ),
+                                child: GridView.builder(
+                                  itemCount: subject!.length < 4
+                                      ? subject!.length + 1
+                                      : subject!.length,
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                          childAspectRatio: 4,
+                                          crossAxisCount: 2),
+                                  itemBuilder: (context, index) {
+                                    return index + 1 != subject!.length + 1
+                                        ? Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "${subject![index]}  ",
+                                              ),
+                                              IconButton(
+                                                icon: Icon(
+                                                  size: height / 45,
+                                                  Icons.delete,
+                                                  color: Colors.red,
+                                                ),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    subject?.removeAt(index);
+                                                  });
+                                                },
+                                              ),
+                                            ],
+                                          )
+                                        : TextButton(
+                                            onPressed: () {
+                                              setState(() {
+                                                addSubject(context);
+                                              });
+                                            },
+                                            child: const Text(
+                                                "Ajouter une matière"));
+                                  },
+                                ),
+                              ),
+
                             const SizedBox(
                               height: 25.0,
                             ),
@@ -242,10 +321,14 @@ class _SignUpScreenState extends State<SignUpScreen>
                             // email
                             _tabController.index == 0
                                 ? TextFormField(
+                                    controller: emailController,
                                     keyboardType: TextInputType.emailAddress,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return "Entrez votre email, s'il vous plaît";
+                                      } else if (_tabController.index == 0 &&
+                                          !isValidEmail(emailController.text)) {
+                                        return "Entrez une adresse email valide";
                                       }
                                       return null;
                                     },
@@ -299,15 +382,45 @@ class _SignUpScreenState extends State<SignUpScreen>
                                             ),
                                           ),
                                           TextFormField(
+                                            controller: phoneNumberController,
                                             keyboardType: TextInputType.phone,
                                             validator: (value) {
                                               if (value == null ||
                                                   value.isEmpty) {
                                                 return "Entrez votre numéro de téléphone, s'il vous plaît";
+                                              } else if (_tabController.index ==
+                                                      1 &&
+                                                  !isValidPhoneNumber(
+                                                      phoneNumberController
+                                                          .text)) {
+                                                return "Entrez un numéro de téléphone valide";
+                                              }
+                                              else if(!isPhoneNumberVerified){
+                                                return "Vérifiez votre numéro de téléphone";
                                               }
                                               return null;
                                             },
                                             decoration: InputDecoration(
+                                              suffixIcon: isPhoneNumberVerified
+                                                  ? Icon(
+                                                      Icons.check,
+                                                      color: lightColorScheme
+                                                          .primary,
+                                                    )
+                                                  : TextButton(
+                                                      onPressed: () async {
+                                                           if (isValidPhoneNumber(phoneNumberController.text)) {
+                                                             uid = await AuthService().verifyPhoneNumber(context,_countriesNumber+phoneNumberController.text);
+                                                             setState(() {
+                                                               (uid ==null)? isPhoneNumberVerified =  false: isPhoneNumberVerified = true;
+                                                             });
+                                                           }
+                                                      },
+                                                      child: const Text(
+                                                        "Vérifier",
+                                                        style: TextStyle(
+                                                            color: Colors.red),
+                                                      )),
                                               label: const Text('Téléphone'),
                                               hintText:
                                                   "Entrez votre numéro de téléphone",
@@ -341,6 +454,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                             ),
                             // password
                             TextFormField(
+                              controller: passwordController,
                               obscureText: true,
                               obscuringCharacter: '*',
                               validator: (value) {
@@ -376,11 +490,15 @@ class _SignUpScreenState extends State<SignUpScreen>
                             ),
                             // password
                             TextFormField(
+                              controller: rePasswordController,
                               obscureText: true,
                               obscuringCharacter: '*',
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return 'Veillez retapper le mot de passe';
+                                } else if (rePasswordController.text.trim() !=
+                                    passwordController.text.trim()) {
+                                  return 'Ratapez le même mot de passe';
                                 }
                                 return null;
                               },
@@ -446,24 +564,49 @@ class _SignUpScreenState extends State<SignUpScreen>
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context).push(MaterialPageRoute(builder: (context) => const AppUI(),));
+                          onPressed: () async{
                             if (_formSignupKey.currentState!.validate() &&
                                 agreePersonalData) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Traitement des données'),
-                                ),
-                              );
+                              showMessage(context, "Traitement des données");
+                              setState(() {
+                                isSignupWaiting = true;
+                              });
+                                _tabController.index == 0
+                                    ? await signUpWithEmail(
+                                        context,
+                                        emailController.text.trim(),
+                                        passwordController.text.trim(),
+                                        nomController.text,
+                                        prenomController.text,
+                                        adresseController.text,
+                                        _selectedUserType!,
+                                        subject: subject)
+                                    : await signUpWithPhoneNumber(
+                                        context,
+                                        phoneNumberController.text.trim(),
+                                        passwordController.text.trim(),
+                                        nomController.text,
+                                        prenomController.text,
+                                        adresseController.text,
+                                        _selectedUserType!,
+                                        subject: subject);
+                                setState((){});
+                                if (_appUser != null) {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) =>  AppUI(appUser: _appUser!,),
+                                  ));
+                                }else{
+                                  setState(() {
+                                    isSignupWaiting = false;
+                                  });
+                                }
+
                             } else if (!agreePersonalData) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text(
-                                        'Veillez accepter la collecte de donnée personnelle')),
-                              );
+                              showMessage(context,
+                                  "Veillez accepter la collecte de donnée personnelle");
                             }
                           },
-                          child: const Text('S\'inscrire'),
+                          child: isSignupWaiting? const CircularProgressIndicator(): const Text('S\'inscrire'),
                         ),
                       ),
                       const SizedBox(
@@ -504,12 +647,29 @@ class _SignUpScreenState extends State<SignUpScreen>
                       ),
                       // sign up social media logo
                       GestureDetector(
-                        onTap: () =>
+                        onTap: () async {
+                          AppUser? user;
+                          setState(() {
+                            isGoogleCliked = true;
+                          });
+                          uid = await AuthService().signInWithGoogle(context);
+                          if(uid!=null){
+                            final isSignin = await AuthService().isGoogleUserExist(uid!);
+                            if(isSignin){
+                              user = await AuthService().getUserById(uid!);
+                            }
                             Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => const GoogleSignUp(),
-                        )),
+                              builder: (context) => isSignin? AppUI(appUser: user!): GoogleSignUp(uid:uid!),
+                            ));
+                          }else{
+                            showMessage(context, "Une erreur s'est produite lors de l'authentification avec google");
+                         setState(() {
+                           isGoogleCliked = false;
+                         });
+                          }
+                          },
                         child: Center(
-                          child: Image.asset(
+                          child: isGoogleCliked? const CircularProgressIndicator(): Image.asset(
                             "lib/Assets/google.png",
                             width: MediaQuery.of(context).size.width / 15,
                           ),
@@ -561,6 +721,104 @@ class _SignUpScreenState extends State<SignUpScreen>
     );
   }
 
-  List<String> usersType = ["Elève", "Enseignant", "Parent d'élève"];
+  String? uid;
   String? _selectedUserType;
+  List<String> usersType = ["Elève", "Enseignant", "Parent d'élève"];
+  bool isSignupWaiting = false;
+  bool isGoogleCliked = false;
+
+
+  void addSubject(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          content: SizedBox(
+            height: MediaQuery.of(context).size.height / 4,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextFormField(
+                  controller: subjectController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Veillez entrer une matière';
+                    }
+                    return null;
+                  },
+                  decoration: InputDecoration(
+                    label: const Text('Matière'),
+                    hintText: 'Entrez une matière',
+                    hintStyle: const TextStyle(
+                      color: Colors.black26,
+                    ),
+                    border: OutlineInputBorder(
+                      borderSide: const BorderSide(
+                        color: Colors.black12, // Default border color
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(
+                        color: Colors.black12, // Default border color
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text("Annuler")),
+                    TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          setState(() {
+                            subject?.add(subjectController.text);
+                            subjectController.clear();
+                          });
+                        },
+                        child: const Text("Ajouter"))
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  final TextEditingController subjectController = TextEditingController();
+
+  Future<void> signUpWithEmail(BuildContext context, String email, String password,
+      String firstName, String lastName, String address, String userType,
+      {List<String>? subject}) async {
+    setState(() async {
+      _appUser = await AuthService().registerWithEmail(
+          context, email, password, firstName, lastName, address, userType, subject: subject);
+    });
+  }
+
+  bool isPhoneNumberVerified = false;
+
+  Future<void> signUpWithPhoneNumber(
+      BuildContext context,
+      String phone,
+      String password,
+      String firstName,
+      String lastName,
+      String address,
+      String userType,
+      {List<String>? subject}) async {
+    setState(() async {
+      _appUser = await AuthService().registerWithPhone(
+          context,uid!, phone, password, firstName, lastName, address, userType, subject: subject);
+    });
+  }
 }

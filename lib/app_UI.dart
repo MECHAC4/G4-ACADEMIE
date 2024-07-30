@@ -4,9 +4,11 @@ import 'package:g4_academie/screens/dashboard_screens/home_screnn.dart';
 import 'package:g4_academie/screens/payment/payment.dart';
 import 'package:g4_academie/screens/profil/profil.dart';
 import 'package:g4_academie/theme/theme.dart';
+import 'package:g4_academie/users.dart';
 
 class AppUI extends StatefulWidget {
-  const AppUI({super.key});
+  final AppUser appUser;
+  const AppUI({super.key, required this.appUser});
 
   @override
   State<AppUI> createState() => _AppUIState();

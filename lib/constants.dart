@@ -1,2 +1,2 @@
 
-String appName = "4G Académie";
+String appName = "G4 Académie";

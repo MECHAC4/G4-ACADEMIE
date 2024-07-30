@@ -1,13 +1,17 @@
-import 'package:country_code_picker/country_code_picker.dart' show CountryCodePicker;
+import 'package:country_code_picker/country_code_picker.dart'
+    show CountryCodePicker;
 import 'package:flutter/material.dart';
 import 'package:g4_academie/constants.dart';
 import 'package:g4_academie/screens/auth_screen/forget_passsword_screen.dart';
 import 'package:g4_academie/screens/auth_screen/signup_screen.dart';
 
 import '../../app_UI.dart';
+import '../../services/auth_services.dart';
+import '../../services/verification.dart';
 import '../../theme/theme.dart';
+import '../../users.dart';
 import '../../widgets/custom_scaffold.dart';
-import '../dashboard_screens/home_screnn.dart';
+import 'google_signup_screen.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -16,9 +20,16 @@ class SignInScreen extends StatefulWidget {
   State<SignInScreen> createState() => _SignInScreenState();
 }
 
-class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMixin {
+class _SignInScreenState extends State<SignInScreen>
+    with TickerProviderStateMixin {
   final _formSignInKey = GlobalKey<FormState>();
   bool rememberPassword = true;
+  bool isPhoneNumberVerified = false;
+  String ? uid;
+  AppUser? _appUser;
+  final TextEditingController phoneNumberController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
 
 
   @override
@@ -39,8 +50,14 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
 
   @override
   Widget build(BuildContext context) {
-    final double width = MediaQuery.of(context).size.width;
-    final double height = MediaQuery.of(context).size.height;
+    final double width = MediaQuery
+        .of(context)
+        .size
+        .width;
+    final double height = MediaQuery
+        .of(context)
+        .size
+        .height;
     return CustomScaffold(
       child: Column(
         children: [
@@ -96,9 +113,8 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
                         initialIndex: 0,
                         child: Column(
                           children: [
-                             TabBar(
-                               onTap: (value) => setState(() {
-                               }),
+                            TabBar(
+                              onTap: (value) => setState(() {}),
                               controller: _tabController,
                               tabs: const [
                                 Text("Avec email"),
@@ -110,11 +126,15 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
                             ),
 
 
-                            _tabController.index==0? TextFormField(
+                            _tabController.index == 0 ? TextFormField(
                               keyboardType: TextInputType.emailAddress,
+                              controller: emailController,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return "Entrez votre email, s'il vous plaît";
+                                } else
+                                if (!isValidEmail(emailController.text)) {
+                                  return "Entrez une adresse email valide";
                                 }
                                 return null;
                               },
@@ -127,19 +147,19 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
                                 border: OutlineInputBorder(
                                   borderSide: const BorderSide(
                                     color:
-                                        Colors.black12, // Default border color
+                                    Colors.black12, // Default border color
                                   ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderSide: const BorderSide(
                                     color:
-                                        Colors.black12, // Default border color
+                                    Colors.black12, // Default border color
                                   ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                            ):Table(
+                            ) : Table(
                               children: [
                                 TableRow(
                                   children: [
@@ -167,14 +187,48 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
                                       ),
                                     ),
                                     TextFormField(
+                                      controller: phoneNumberController,
                                       keyboardType: TextInputType.phone,
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
                                           return "Entrez votre numéro de téléphone, s'il vous plaît";
+                                        } else if (!isPhoneNumberVerified) {
+                                          return "Vous devez vérifier ce numéro";
                                         }
                                         return null;
                                       },
                                       decoration: InputDecoration(
+
+                                        suffixIcon: isPhoneNumberVerified
+                                            ? Icon(
+                                          Icons.check,
+                                          color: lightColorScheme
+                                              .primary,
+                                        )
+                                            : TextButton(
+                                            onPressed: () async {
+                                              if (isValidPhoneNumber(
+                                                  phoneNumberController.text)) {
+                                                uid = await AuthService()
+                                                    .verifyPhoneNumber(context,
+                                                    _countriesNumber +
+                                                        phoneNumberController
+                                                            .text);
+                                                setState(() {
+                                                  (uid == null)
+                                                      ?
+                                                  isPhoneNumberVerified = false
+                                                      : isPhoneNumberVerified =
+                                                  true;
+                                                });
+                                              }
+                                            },
+                                            child: const Text(
+                                              "Vérifier",
+                                              style: TextStyle(
+                                                  color: Colors.red),
+                                            )),
+
                                         label: const Text('Téléphone'),
                                         hintText: "Entrez votre numéro de téléphone",
                                         hintStyle: const TextStyle(
@@ -183,16 +237,20 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
                                         border: OutlineInputBorder(
                                           borderSide: const BorderSide(
                                             color:
-                                            Colors.black12, // Default border color
+                                            Colors
+                                                .black12, // Default border color
                                           ),
-                                          borderRadius: BorderRadius.circular(10),
+                                          borderRadius: BorderRadius.circular(
+                                              10),
                                         ),
                                         enabledBorder: OutlineInputBorder(
                                           borderSide: const BorderSide(
                                             color:
-                                            Colors.black12, // Default border color
+                                            Colors
+                                                .black12, // Default border color
                                           ),
-                                          borderRadius: BorderRadius.circular(10),
+                                          borderRadius: BorderRadius.circular(
+                                              10),
                                         ),
                                       ),
                                     ),
@@ -221,14 +279,14 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
                                 border: OutlineInputBorder(
                                   borderSide: const BorderSide(
                                     color:
-                                        Colors.black12, // Default border color
+                                    Colors.black12, // Default border color
                                   ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderSide: const BorderSide(
                                     color:
-                                        Colors.black12, // Default border color
+                                    Colors.black12, // Default border color
                                   ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -265,9 +323,9 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
                           GestureDetector(
                             onTap: () =>
                                 Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) =>
+                                  builder: (context) =>
                                   const ForgetPasswordScreen(),
-                            )),
+                                )),
                             child: Text(
                               'Mot de passe oublié ?',
                               style: TextStyle(
@@ -284,15 +342,35 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context).push(MaterialPageRoute(builder: (context) => const AppUI(),));
+                          onPressed: () async {
+                            //Navigator.of(context).push(MaterialPageRoute(builder: (context) => const AppUI(),));
                             if (_formSignInKey.currentState!.validate() &&
                                 rememberPassword) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Traitement des données'),
-                                ),
-                              );
+                              setState(() {
+                                isSigninWaiting = true;
+                              });
+                              showMessage(context, "Traitement des données");
+                              if (_tabController.index == 0) {
+                                _appUser = await AuthService().signInWithEmail(
+                                    context, emailController.text,
+                                    passwordController.text);
+                              } else {
+                                _appUser = await AuthService().signInWithPhone(
+                                    context, uid!, _countriesNumber +
+                                    phoneNumberController.text,
+                                    passwordController.text);
+                              }
+                              setState(() {});
+                              if (_appUser != null) {
+                                showMessage(context, "Connexion réussie");
+                                Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) =>
+                                      AppUI(appUser: _appUser!,),));
+                              } else {
+                                setState(() {
+                                  isSigninWaiting = false;
+                                });
+                              }
                             } else if (!rememberPassword) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
@@ -301,7 +379,9 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
                               );
                             }
                           },
-                          child: const Text("Se connecter"),
+                          child: isSigninWaiting
+                              ? const CircularProgressIndicator()
+                              : const Text("Se connecter"),
                         ),
                       ),
                       const SizedBox(
@@ -339,10 +419,46 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
                       const SizedBox(
                         height: 25.0,
                       ),
-                      Center(
-                        child: Image.asset(
-                          "lib/Assets/google.png",
-                          width: MediaQuery.of(context).size.width / 15,
+                      GestureDetector(
+                        onTap: () async {
+                          AppUser? currentAppUser;
+                          setState(() {
+                            isGoogleCliked = true;
+                          });
+                          uid = await AuthService().signInWithGoogle(context);
+                          if (uid != null) {
+                            final isSignup = await AuthService()
+                                .isGoogleUserExist(uid!);
+                          if(isSignup){
+                           currentAppUser = await AuthService().getUserById(uid!);
+                          }
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) {
+                                if(isSignup){
+                                  return AppUI(appUser: currentAppUser!);
+                                }
+                                return GoogleSignUp(uid: uid!);
+                              },
+                            ));
+                          } else {
+                            showMessage(context,
+                                "Une erreur s'est produite lors de l'authentification avec google");
+                            setState(() {
+                              isGoogleCliked = false;
+                            });
+                          }
+                        },
+
+                        child: Center(
+                          child: isGoogleCliked
+                              ? const CircularProgressIndicator()
+                              : Image.asset(
+                            "lib/Assets/google.png",
+                            width: MediaQuery
+                                .of(context)
+                                .size
+                                .width / 15,
+                          ),
                         ),
                       ),
                       const SizedBox(
@@ -390,4 +506,8 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
       ),
     );
   }
+
+  bool isSigninWaiting = false;
+  bool isGoogleCliked = false;
+
 }
