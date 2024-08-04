@@ -1,26 +1,87 @@
 {
   "project_info": {
-    "project_number": "240272622591",
-    "project_id": "g4-academie",
-    "storage_bucket": "g4-academie.appspot.com"
+    "project_number": "885901101157",
+    "project_id": "g4-academie-fe1d3",
+    "storage_bucket": "g4-academie-fe1d3.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:240272622591:android:cd9c638df3abffdf78ddca",
+        "mobilesdk_app_id": "1:885901101157:android:02b7ccae20e1193c101e8c",
         "android_client_info": {
           "package_name": "com.example.g4_academie"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "885901101157-c1dvv2apsku11ioum96juh27ngqlt3tf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.g4_academie",
+            "certificate_hash": "18966d2548d9afa8b512e291deb79cdd637dc417"
+          }
+        },
+        {
+          "client_id": "885901101157-frp12k4dptv6ve934tre7q696oa9tgnf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyBE8aiJz91HSc-OB1Kmdsoq4p0PC8y7VII"
+          "current_key": "AIzaSyB5zeADyIWf85V_IiG8T4NnV_Q4YBH2r64"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "885901101157-frp12k4dptv6ve934tre7q696oa9tgnf.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "885901101157-dqcsejoemiv5f0g94gev94oestp2qvmb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.g4Academie"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:885901101157:android:3441e7063abd41a3101e8c",
+        "android_client_info": {
+          "package_name": "com.g4_academie"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "885901101157-frp12k4dptv6ve934tre7q696oa9tgnf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB5zeADyIWf85V_IiG8T4NnV_Q4YBH2r64"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "885901101157-frp12k4dptv6ve934tre7q696oa9tgnf.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "885901101157-dqcsejoemiv5f0g94gev94oestp2qvmb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.g4Academie"
+              }
+            }
+          ]
         }
       }
     }

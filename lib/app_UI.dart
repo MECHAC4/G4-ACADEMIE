@@ -21,10 +21,10 @@ class _AppUIState extends State<AppUI> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: [
-        const DashboardPage(),
+         DashboardPage(appUser: widget.appUser,),
         const ChatScreen(),
         const PaymentScreen(),
-        const ProfileScreen(),
+         ProfileScreen(appUser: widget.appUser,),
       ][_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: const [

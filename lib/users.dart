@@ -41,7 +41,7 @@ class AppUser {
       userType: map['userType'],
       emailOrPhone: map['emailOrPhone'],
       password: map['password'],
-      subject: map['subject'],
+      subject: map['subject'] != null ? List<String>.from(map['subject']) : null,
     );
   }
 }

@@ -1,4 +1,4 @@
-import 'package:encrypt/encrypt.dart' as encrypt;
+/*import 'package:encrypt/encrypt.dart' as encrypt;
 
 class EncryptionService {
   final _encrypter = encrypt.Encrypter(encrypt.AES(
@@ -15,3 +15,4 @@ class EncryptionService {
     return _encrypter.decrypt64(encryptedPassword, iv: _iv);
   }
 }
+*/

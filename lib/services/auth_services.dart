@@ -5,13 +5,12 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/material.dart';
 
 import '../users.dart';
-import 'encrypt_service.dart';
 
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final EncryptionService _encryptionService = EncryptionService();
+  //final EncryptionService _encryptionService = EncryptionService();
 
   // Enregistrement par email
   Future<AppUser?> registerWithEmail(
@@ -32,7 +31,7 @@ class AuthService {
         password: password,
       );
 
-      String encryptedPassword = _encryptionService.encryptPassword(password);
+      //String encryptedPassword = _encryptionService.encryptPassword(password);
 
       // Stockage des informations dans Firestore
       await _firestore.collection('users').doc(userCredential.user?.uid).set({
@@ -41,7 +40,7 @@ class AuthService {
         'address': address,
         'userType': userType,
         'emailOrPhone': email,
-        'password': encryptedPassword,
+        'password': password,
         'subject': subject,
       });
 
@@ -52,7 +51,7 @@ class AuthService {
         address: address,
         userType: userType,
         emailOrPhone: email,
-        password: encryptedPassword,
+        password: password,
         subject: subject,
       );
 
@@ -191,7 +190,7 @@ class AuthService {
         List<String>? subject,
       }) async {
     try {
-      String encryptedPassword = _encryptionService.encryptPassword(password);
+      //String encryptedPassword = _encryptionService.encryptPassword(password);
 
       // Stockage des informations dans Firestore
       await _firestore.collection('users').doc(uid).set({
@@ -200,7 +199,7 @@ class AuthService {
         'address': address,
         'userType': userType,
         'emailOrPhone': phone,
-        'password': encryptedPassword,
+        'password': password,
         'subject': subject,
       });
       return AppUser(
@@ -210,7 +209,7 @@ class AuthService {
         address: address,
         userType: userType,
         emailOrPhone: phone,
-        password: encryptedPassword,
+        password: password,
         subject: subject,
       );
     } catch (e) {
@@ -271,7 +270,7 @@ class AuthService {
           showMessage(context,"Mot de passe incorrect : ${e.toString()}");
           return null;
         } else {
-          showMessage(context, "Mot de passe incorrect : ${e.toString()}");
+          showMessage(context, "Une erreur s'est produite : ${e.toString()}");
           debugPrint('Problème : *******************$e');
           return null;
         }
@@ -285,23 +284,28 @@ class AuthService {
       String phone,
       String password,
       ) async {
-    DocumentSnapshot doc = await _firestore.collection('users').doc(uid).get();
-    if (doc.exists) {
-      final docData = doc.data() as Map<String, dynamic>;
-      AppUser? appUser = AppUser.fromMap(doc.data() as Map<String, dynamic>, uid);
-
-      // Décryptage du mot de passe stocké
-      String decryptedPassword = _encryptionService.decryptPassword(docData["password"]);
-
-      // Vérification du mot de passe
-      if (decryptedPassword == password) {
-        return appUser;
+    try {
+      DocumentSnapshot doc = await _firestore.collection('users').doc(uid).get();
+      showMessage(context, "doc.exists :${doc.exists} \nUID: $uid");
+      if (doc.exists) {
+        AppUser? appUser = AppUser.fromMap(doc.data() as Map<String, dynamic>, uid);
+        showMessage(context, "AppUser :${appUser.toMap()} \nUID: $uid");
+        // Décryptage du mot de passe stocké
+        //String encryptedPassword = _encryptionService.encryptPassword(password);
+        //showMessage(context, "isDecrypt : ${encryptedPassword == appUser.password}");
+        // Vérification du mot de passe
+        if (password == appUser.password) {
+          return appUser;
+        } else {
+          showMessage(context, "Mot de passe incorrect");
+          return null;
+        }
       } else {
-        showMessage(context, "Mot de passe incorrect");
+        showMessage(context, "Compte non existant : veillez vous inscrire");
         return null;
       }
-    } else {
-      showMessage(context, "Compte non existant : veillez vous inscrire");
+    } on Exception catch (e) {
+      showMessage(context, "Erreur lors de la connexion : ${e.toString()}");
       return null;
     }
   }

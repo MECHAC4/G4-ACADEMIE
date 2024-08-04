@@ -41,49 +41,53 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBouwlM08HZtKeo9RNtLwRM4qkWuf_A93Q',
-    appId: '1:240272622591:web:05973705387830a078ddca',
-    messagingSenderId: '240272622591',
-    projectId: 'g4-academie',
-    authDomain: 'g4-academie.firebaseapp.com',
-    storageBucket: 'g4-academie.appspot.com',
-    measurementId: 'G-HZN7TXFCDK',
+    apiKey: 'AIzaSyDShm4peaTKi4sXEOqkmGMhFxQQhIW3PWo',
+    appId: '1:885901101157:web:d607ced6f077eb2f101e8c',
+    messagingSenderId: '885901101157',
+    projectId: 'g4-academie-fe1d3',
+    authDomain: 'g4-academie-fe1d3.firebaseapp.com',
+    storageBucket: 'g4-academie-fe1d3.appspot.com',
+    measurementId: 'G-0PSS1PHFFW',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBE8aiJz91HSc-OB1Kmdsoq4p0PC8y7VII',
-    appId: '1:240272622591:android:cd9c638df3abffdf78ddca',
-    messagingSenderId: '240272622591',
-    projectId: 'g4-academie',
-    storageBucket: 'g4-academie.appspot.com',
+    apiKey: 'AIzaSyB5zeADyIWf85V_IiG8T4NnV_Q4YBH2r64',
+    appId: '1:885901101157:android:3441e7063abd41a3101e8c',
+    messagingSenderId: '885901101157',
+    projectId: 'g4-academie-fe1d3',
+    storageBucket: 'g4-academie-fe1d3.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAgJ5BjedgnlEJADdOetXmcnQ7GIj4Y5MU',
-    appId: '1:240272622591:ios:26a55f2717b12bc078ddca',
-    messagingSenderId: '240272622591',
-    projectId: 'g4-academie',
-    storageBucket: 'g4-academie.appspot.com',
+    apiKey: 'AIzaSyAK2WXgzNr7zJ6vm9Z9Gh-x2Wr9SWUGGQU',
+    appId: '1:885901101157:ios:e199be6827723c27101e8c',
+    messagingSenderId: '885901101157',
+    projectId: 'g4-academie-fe1d3',
+    storageBucket: 'g4-academie-fe1d3.appspot.com',
+    androidClientId: '885901101157-c1dvv2apsku11ioum96juh27ngqlt3tf.apps.googleusercontent.com',
+    iosClientId: '885901101157-dqcsejoemiv5f0g94gev94oestp2qvmb.apps.googleusercontent.com',
     iosBundleId: 'com.example.g4Academie',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyAgJ5BjedgnlEJADdOetXmcnQ7GIj4Y5MU',
-    appId: '1:240272622591:ios:26a55f2717b12bc078ddca',
-    messagingSenderId: '240272622591',
-    projectId: 'g4-academie',
-    storageBucket: 'g4-academie.appspot.com',
+    apiKey: 'AIzaSyAK2WXgzNr7zJ6vm9Z9Gh-x2Wr9SWUGGQU',
+    appId: '1:885901101157:ios:e199be6827723c27101e8c',
+    messagingSenderId: '885901101157',
+    projectId: 'g4-academie-fe1d3',
+    storageBucket: 'g4-academie-fe1d3.appspot.com',
+    androidClientId: '885901101157-c1dvv2apsku11ioum96juh27ngqlt3tf.apps.googleusercontent.com',
+    iosClientId: '885901101157-dqcsejoemiv5f0g94gev94oestp2qvmb.apps.googleusercontent.com',
     iosBundleId: 'com.example.g4Academie',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyBouwlM08HZtKeo9RNtLwRM4qkWuf_A93Q',
-    appId: '1:240272622591:web:2e0561ae924804d378ddca',
-    messagingSenderId: '240272622591',
-    projectId: 'g4-academie',
-    authDomain: 'g4-academie.firebaseapp.com',
-    storageBucket: 'g4-academie.appspot.com',
-    measurementId: 'G-012DPS7DCW',
+    apiKey: 'AIzaSyDShm4peaTKi4sXEOqkmGMhFxQQhIW3PWo',
+    appId: '1:885901101157:web:20921ea3c5a56b1e101e8c',
+    messagingSenderId: '885901101157',
+    projectId: 'g4-academie-fe1d3',
+    authDomain: 'g4-academie-fe1d3.firebaseapp.com',
+    storageBucket: 'g4-academie-fe1d3.appspot.com',
+    measurementId: 'G-JSEVG20YES',
   );
 
 }

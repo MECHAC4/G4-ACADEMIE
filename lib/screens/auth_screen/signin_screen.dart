@@ -25,12 +25,11 @@ class _SignInScreenState extends State<SignInScreen>
   final _formSignInKey = GlobalKey<FormState>();
   bool rememberPassword = true;
   bool isPhoneNumberVerified = false;
-  String ? uid;
+  String? uid;
   AppUser? _appUser;
   final TextEditingController phoneNumberController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
-
 
   @override
   void dispose() {
@@ -50,14 +49,8 @@ class _SignInScreenState extends State<SignInScreen>
 
   @override
   Widget build(BuildContext context) {
-    final double width = MediaQuery
-        .of(context)
-        .size
-        .width;
-    final double height = MediaQuery
-        .of(context)
-        .size
-        .height;
+    final double width = MediaQuery.of(context).size.width;
+    final double height = MediaQuery.of(context).size.height;
     return CustomScaffold(
       child: Column(
         children: [
@@ -124,144 +117,147 @@ class _SignInScreenState extends State<SignInScreen>
                               indicatorSize: TabBarIndicatorSize.tab,
                               padding: const EdgeInsets.only(bottom: 20),
                             ),
-
-
-                            _tabController.index == 0 ? TextFormField(
-                              keyboardType: TextInputType.emailAddress,
-                              controller: emailController,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return "Entrez votre email, s'il vous plaît";
-                                } else
-                                if (!isValidEmail(emailController.text)) {
-                                  return "Entrez une adresse email valide";
-                                }
-                                return null;
-                              },
-                              decoration: InputDecoration(
-                                label: const Text('Email'),
-                                hintText: "Entrez votre email",
-                                hintStyle: const TextStyle(
-                                  color: Colors.black26,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                    color:
-                                    Colors.black12, // Default border color
-                                  ),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                    color:
-                                    Colors.black12, // Default border color
-                                  ),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                            ) : Table(
-                              children: [
-                                TableRow(
-                                  children: [
-                                    CountryCodePicker(
-                                      //padding: const EdgeInsets.only(left: 5),
-                                      alignLeft: true,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _countriesNumber =
-                                              value.toString();
-                                          debugPrint(
-                                              "**************$_countriesNumber************");
-                                        });
-                                        //print("***************$value**************");
-                                      },
-                                      // Initial selection and favorite can be one of code ('IT') OR dial_code('+39')
-                                      initialSelection: 'BJ',
-
-                                      favorite: const ['+229', 'BJ'],
-                                      //countryFilter: const ['IT', 'FR'],
-                                      // flag can be styled with BoxDecoration's `borderRadius` and `shape` fields
-                                      flagDecoration: BoxDecoration(
-                                        borderRadius: BorderRadius
-                                            .circular(7),
+                            _tabController.index == 0
+                                ? TextFormField(
+                                    keyboardType: TextInputType.emailAddress,
+                                    controller: emailController,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return "Entrez votre email, s'il vous plaît";
+                                      } else if (!isValidEmail(
+                                          emailController.text)) {
+                                        return "Entrez une adresse email valide";
+                                      }
+                                      return null;
+                                    },
+                                    decoration: InputDecoration(
+                                      label: const Text('Email'),
+                                      hintText: "Entrez votre email",
+                                      hintStyle: const TextStyle(
+                                        color: Colors.black26,
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderSide: const BorderSide(
+                                          color: Colors
+                                              .black12, // Default border color
+                                        ),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide: const BorderSide(
+                                          color: Colors
+                                              .black12, // Default border color
+                                        ),
+                                        borderRadius: BorderRadius.circular(10),
                                       ),
                                     ),
-                                    TextFormField(
-                                      controller: phoneNumberController,
-                                      keyboardType: TextInputType.phone,
-                                      validator: (value) {
-                                        if (value == null || value.isEmpty) {
-                                          return "Entrez votre numéro de téléphone, s'il vous plaît";
-                                        } else if (!isPhoneNumberVerified) {
-                                          return "Vous devez vérifier ce numéro";
-                                        }
-                                        return null;
-                                      },
-                                      decoration: InputDecoration(
-
-                                        suffixIcon: isPhoneNumberVerified
-                                            ? Icon(
-                                          Icons.check,
-                                          color: lightColorScheme
-                                              .primary,
-                                        )
-                                            : TextButton(
-                                            onPressed: () async {
-                                              if (isValidPhoneNumber(
-                                                  phoneNumberController.text)) {
-                                                uid = await AuthService()
-                                                    .verifyPhoneNumber(context,
-                                                    _countriesNumber +
-                                                        phoneNumberController
-                                                            .text);
-                                                setState(() {
-                                                  (uid == null)
-                                                      ?
-                                                  isPhoneNumberVerified = false
-                                                      : isPhoneNumberVerified =
-                                                  true;
-                                                });
-                                              }
+                                  )
+                                : Table(
+                                    children: [
+                                      TableRow(
+                                        children: [
+                                          CountryCodePicker(
+                                            //padding: const EdgeInsets.only(left: 5),
+                                            alignLeft: true,
+                                            onChanged: (value) {
+                                              setState(() {
+                                                _countriesNumber =
+                                                    value.toString();
+                                                debugPrint(
+                                                    "**************$_countriesNumber************");
+                                              });
+                                              //print("***************$value**************");
                                             },
-                                            child: const Text(
-                                              "Vérifier",
-                                              style: TextStyle(
-                                                  color: Colors.red),
-                                            )),
+                                            // Initial selection and favorite can be one of code ('IT') OR dial_code('+39')
+                                            initialSelection: 'BJ',
 
-                                        label: const Text('Téléphone'),
-                                        hintText: "Entrez votre numéro de téléphone",
-                                        hintStyle: const TextStyle(
-                                          color: Colors.black26,
-                                        ),
-                                        border: OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                            color:
-                                            Colors
-                                                .black12, // Default border color
+                                            favorite: const ['+229', 'BJ'],
+                                            //countryFilter: const ['IT', 'FR'],
+                                            // flag can be styled with BoxDecoration's `borderRadius` and `shape` fields
+                                            flagDecoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(7),
+                                            ),
                                           ),
-                                          borderRadius: BorderRadius.circular(
-                                              10),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                            color:
-                                            Colors
-                                                .black12, // Default border color
+                                          TextFormField(
+                                            controller: phoneNumberController,
+                                            keyboardType: TextInputType.phone,
+                                            validator: (value) {
+                                              if (value == null ||
+                                                  value.isEmpty) {
+                                                return "Entrez votre numéro de téléphone, s'il vous plaît";
+                                              } else if (!isPhoneNumberVerified) {
+                                                return "Vous devez vérifier ce numéro";
+                                              }
+                                              return null;
+                                            },
+                                            decoration: InputDecoration(
+                                              suffixIcon: TextButton(
+                                                  onPressed: () async {
+                                                    if (isValidPhoneNumber(
+                                                        phoneNumberController
+                                                            .text)) {
+                                                      uid = await AuthService()
+                                                          .verifyPhoneNumber(
+                                                              context,
+                                                              _countriesNumber +
+                                                                  phoneNumberController
+                                                                      .text);
+                                                      setState(() {
+                                                        (uid == null)
+                                                            ? isPhoneNumberVerified =
+                                                                false
+                                                            : isPhoneNumberVerified =
+                                                                true;
+                                                      });
+                                                    }
+                                                  },
+                                                  child: isPhoneNumberVerified
+                                                      ? Icon(
+                                                          Icons.check,
+                                                          color:
+                                                              lightColorScheme
+                                                                  .primary,
+                                                        )
+                                                      : const Text(
+                                                          "Vérifier",
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.red),
+                                                        )),
+                                              label: const Text('Téléphone'),
+                                              hintText:
+                                                  "Entrez votre numéro de téléphone",
+                                              hintStyle: const TextStyle(
+                                                color: Colors.black26,
+                                              ),
+                                              border: OutlineInputBorder(
+                                                borderSide: const BorderSide(
+                                                  color: Colors
+                                                      .black12, // Default border color
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              enabledBorder: OutlineInputBorder(
+                                                borderSide: const BorderSide(
+                                                  color: Colors
+                                                      .black12, // Default border color
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                            ),
                                           ),
-                                          borderRadius: BorderRadius.circular(
-                                              10),
-                                        ),
+                                        ],
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                                    ],
+                                  ),
                             const SizedBox(
                               height: 25.0,
                             ),
                             TextFormField(
+                              controller: passwordController,
                               obscureText: true,
                               obscuringCharacter: '*',
                               validator: (value) {
@@ -279,14 +275,14 @@ class _SignInScreenState extends State<SignInScreen>
                                 border: OutlineInputBorder(
                                   borderSide: const BorderSide(
                                     color:
-                                    Colors.black12, // Default border color
+                                        Colors.black12, // Default border color
                                   ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderSide: const BorderSide(
                                     color:
-                                    Colors.black12, // Default border color
+                                        Colors.black12, // Default border color
                                   ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -323,9 +319,9 @@ class _SignInScreenState extends State<SignInScreen>
                           GestureDetector(
                             onTap: () =>
                                 Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) =>
+                              builder: (context) =>
                                   const ForgetPasswordScreen(),
-                                )),
+                            )),
                             child: Text(
                               'Mot de passe oublié ?',
                               style: TextStyle(
@@ -352,20 +348,25 @@ class _SignInScreenState extends State<SignInScreen>
                               showMessage(context, "Traitement des données");
                               if (_tabController.index == 0) {
                                 _appUser = await AuthService().signInWithEmail(
-                                    context, emailController.text,
+                                    context,
+                                    emailController.text,
                                     passwordController.text);
                               } else {
                                 _appUser = await AuthService().signInWithPhone(
-                                    context, uid!, _countriesNumber +
-                                    phoneNumberController.text,
+                                    context,
+                                    uid!,
+                                    _countriesNumber +
+                                        phoneNumberController.text,
                                     passwordController.text);
                               }
                               setState(() {});
                               if (_appUser != null) {
                                 showMessage(context, "Connexion réussie");
                                 Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) =>
-                                      AppUI(appUser: _appUser!,),));
+                                  builder: (context) => AppUI(
+                                    appUser: _appUser!,
+                                  ),
+                                ));
                               } else {
                                 setState(() {
                                   isSigninWaiting = false;
@@ -380,7 +381,7 @@ class _SignInScreenState extends State<SignInScreen>
                             }
                           },
                           child: isSigninWaiting
-                              ? const CircularProgressIndicator()
+                              ? const CircularProgressIndicator(color : Colors.white)
                               : const Text("Se connecter"),
                         ),
                       ),
@@ -427,14 +428,15 @@ class _SignInScreenState extends State<SignInScreen>
                           });
                           uid = await AuthService().signInWithGoogle(context);
                           if (uid != null) {
-                            final isSignup = await AuthService()
-                                .isGoogleUserExist(uid!);
-                          if(isSignup){
-                           currentAppUser = await AuthService().getUserById(uid!);
-                          }
+                            final isSignup =
+                                await AuthService().isGoogleUserExist(uid!);
+                            if (isSignup) {
+                              currentAppUser =
+                                  await AuthService().getUserById(uid!);
+                            }
                             Navigator.of(context).push(MaterialPageRoute(
                               builder: (context) {
-                                if(isSignup){
+                                if (isSignup) {
                                   return AppUI(appUser: currentAppUser!);
                                 }
                                 return GoogleSignUp(uid: uid!);
@@ -448,17 +450,13 @@ class _SignInScreenState extends State<SignInScreen>
                             });
                           }
                         },
-
                         child: Center(
                           child: isGoogleCliked
                               ? const CircularProgressIndicator()
                               : Image.asset(
-                            "lib/Assets/google.png",
-                            width: MediaQuery
-                                .of(context)
-                                .size
-                                .width / 15,
-                          ),
+                                  "lib/Assets/google.png",
+                                  width: MediaQuery.of(context).size.width / 15,
+                                ),
                         ),
                       ),
                       const SizedBox(
@@ -509,5 +507,4 @@ class _SignInScreenState extends State<SignInScreen>
 
   bool isSigninWaiting = false;
   bool isGoogleCliked = false;
-
 }

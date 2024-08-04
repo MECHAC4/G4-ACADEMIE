@@ -394,33 +394,45 @@ class _SignUpScreenState extends State<SignUpScreen>
                                                       phoneNumberController
                                                           .text)) {
                                                 return "Entrez un numéro de téléphone valide";
-                                              }
-                                              else if(!isPhoneNumberVerified){
+                                              } else if (!isPhoneNumberVerified) {
                                                 return "Vérifiez votre numéro de téléphone";
                                               }
                                               return null;
                                             },
                                             decoration: InputDecoration(
-                                              suffixIcon: isPhoneNumberVerified
-                                                  ? Icon(
-                                                      Icons.check,
-                                                      color: lightColorScheme
-                                                          .primary,
-                                                    )
-                                                  : TextButton(
-                                                      onPressed: () async {
-                                                           if (isValidPhoneNumber(phoneNumberController.text)) {
-                                                             uid = await AuthService().verifyPhoneNumber(context,_countriesNumber+phoneNumberController.text);
-                                                             setState(() {
-                                                               (uid ==null)? isPhoneNumberVerified =  false: isPhoneNumberVerified = true;
-                                                             });
-                                                           }
-                                                      },
-                                                      child: const Text(
-                                                        "Vérifier",
-                                                        style: TextStyle(
-                                                            color: Colors.red),
-                                                      )),
+                                              suffixIcon: TextButton(
+                                                  onPressed: () async {
+                                                    if (isValidPhoneNumber(
+                                                        phoneNumberController
+                                                            .text)) {
+                                                      uid = await AuthService()
+                                                          .verifyPhoneNumber(
+                                                              context,
+                                                              _countriesNumber +
+                                                                  phoneNumberController
+                                                                      .text);
+                                                      setState(() {
+                                                        (uid == null)
+                                                            ? isPhoneNumberVerified =
+                                                                false
+                                                            : isPhoneNumberVerified =
+                                                                true;
+                                                      });
+                                                    }
+                                                  },
+                                                  child: isPhoneNumberVerified
+                                                      ? Icon(
+                                                          Icons.check,
+                                                          color:
+                                                              lightColorScheme
+                                                                  .primary,
+                                                        )
+                                                      : const Text(
+                                                          "Vérifier",
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.red),
+                                                        )),
                                               label: const Text('Téléphone'),
                                               hintText:
                                                   "Entrez votre numéro de téléphone",
@@ -564,49 +576,55 @@ class _SignUpScreenState extends State<SignUpScreen>
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () async{
+                          onPressed: () async {
                             if (_formSignupKey.currentState!.validate() &&
                                 agreePersonalData) {
                               showMessage(context, "Traitement des données");
                               setState(() {
                                 isSignupWaiting = true;
                               });
-                                _tabController.index == 0
-                                    ? await signUpWithEmail(
-                                        context,
-                                        emailController.text.trim(),
-                                        passwordController.text.trim(),
-                                        nomController.text,
-                                        prenomController.text,
-                                        adresseController.text,
-                                        _selectedUserType!,
-                                        subject: subject)
-                                    : await signUpWithPhoneNumber(
-                                        context,
-                                        phoneNumberController.text.trim(),
-                                        passwordController.text.trim(),
-                                        nomController.text,
-                                        prenomController.text,
-                                        adresseController.text,
-                                        _selectedUserType!,
-                                        subject: subject);
-                                setState((){});
-                                if (_appUser != null) {
-                                  Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) =>  AppUI(appUser: _appUser!,),
-                                  ));
-                                }else{
-                                  setState(() {
-                                    isSignupWaiting = false;
-                                  });
-                                }
-
+                              _tabController.index == 0
+                                  ? await signUpWithEmail(
+                                      context,
+                                      emailController.text.trim(),
+                                      passwordController.text.trim(),
+                                      nomController.text,
+                                      prenomController.text,
+                                      adresseController.text,
+                                      _selectedUserType!,
+                                      subject: subject)
+                                  : await signUpWithPhoneNumber(
+                                      context,
+                                      phoneNumberController.text.trim(),
+                                      passwordController.text.trim(),
+                                      nomController.text,
+                                      prenomController.text,
+                                      adresseController.text,
+                                      _selectedUserType!,
+                                      subject: subject);
+                              setState(() {});
+                              setState(() {});
+                              setState(() {});
+                              setState(() {});
+                              if (_appUser != null) {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => AppUI(
+                                    appUser: _appUser!,
+                                  ),
+                                ));
+                              } else {
+                                setState(() {
+                                  isSignupWaiting = false;
+                                });
+                              }
                             } else if (!agreePersonalData) {
                               showMessage(context,
                                   "Veillez accepter la collecte de donnée personnelle");
                             }
                           },
-                          child: isSignupWaiting? const CircularProgressIndicator(): const Text('S\'inscrire'),
+                          child: isSignupWaiting
+                              ? const CircularProgressIndicator(color : Colors.white)
+                              : const Text('S\'inscrire'),
                         ),
                       ),
                       const SizedBox(
@@ -653,26 +671,32 @@ class _SignUpScreenState extends State<SignUpScreen>
                             isGoogleCliked = true;
                           });
                           uid = await AuthService().signInWithGoogle(context);
-                          if(uid!=null){
-                            final isSignin = await AuthService().isGoogleUserExist(uid!);
-                            if(isSignin){
+                          if (uid != null) {
+                            final isSignin =
+                                await AuthService().isGoogleUserExist(uid!);
+                            if (isSignin) {
                               user = await AuthService().getUserById(uid!);
                             }
                             Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) => isSignin? AppUI(appUser: user!): GoogleSignUp(uid:uid!),
+                              builder: (context) => isSignin
+                                  ? AppUI(appUser: user!)
+                                  : GoogleSignUp(uid: uid!),
                             ));
-                          }else{
-                            showMessage(context, "Une erreur s'est produite lors de l'authentification avec google");
-                         setState(() {
-                           isGoogleCliked = false;
-                         });
+                          } else {
+                            showMessage(context,
+                                "Une erreur s'est produite lors de l'authentification avec google");
+                            setState(() {
+                              isGoogleCliked = false;
+                            });
                           }
-                          },
+                        },
                         child: Center(
-                          child: isGoogleCliked? const CircularProgressIndicator(): Image.asset(
-                            "lib/Assets/google.png",
-                            width: MediaQuery.of(context).size.width / 15,
-                          ),
+                          child: isGoogleCliked
+                              ? const CircularProgressIndicator()
+                              : Image.asset(
+                                  "lib/Assets/google.png",
+                                  width: MediaQuery.of(context).size.width / 15,
+                                ),
                         ),
                       ),
                       const SizedBox(
@@ -726,7 +750,6 @@ class _SignUpScreenState extends State<SignUpScreen>
   List<String> usersType = ["Elève", "Enseignant", "Parent d'élève"];
   bool isSignupWaiting = false;
   bool isGoogleCliked = false;
-
 
   void addSubject(BuildContext context) {
     showDialog(
@@ -796,12 +819,20 @@ class _SignUpScreenState extends State<SignUpScreen>
 
   final TextEditingController subjectController = TextEditingController();
 
-  Future<void> signUpWithEmail(BuildContext context, String email, String password,
-      String firstName, String lastName, String address, String userType,
+  Future<void> signUpWithEmail(
+      BuildContext context,
+      String email,
+      String password,
+      String firstName,
+      String lastName,
+      String address,
+      String userType,
       {List<String>? subject}) async {
-    setState(() async {
-      _appUser = await AuthService().registerWithEmail(
-          context, email, password, firstName, lastName, address, userType, subject: subject);
+    _appUser = await AuthService().registerWithEmail(
+        context, email, password, firstName, lastName, address, userType,
+        subject: subject);
+    setState(() {
+      _appUser = _appUser;
     });
   }
 
@@ -816,9 +847,11 @@ class _SignUpScreenState extends State<SignUpScreen>
       String address,
       String userType,
       {List<String>? subject}) async {
-    setState(() async {
-      _appUser = await AuthService().registerWithPhone(
-          context,uid!, phone, password, firstName, lastName, address, userType, subject: subject);
+    _appUser = await AuthService().registerWithPhone(
+        context, uid!, phone, password, firstName, lastName, address, userType,
+        subject: subject);
+    setState(() {
+      _appUser = _appUser;
     });
   }
 }

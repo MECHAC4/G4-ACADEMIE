@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart' show BuildContext, ScaffoldMessenger, SnackBar,Text;
+import 'package:flutter/material.dart' show BuildContext, ScaffoldMessenger, SnackBar, Text;
+import 'package:g4_academie/theme/theme.dart';
 
 bool isValidEmail(String email) {
   final RegExp emailRegExp = RegExp(
@@ -27,6 +28,8 @@ void showMessage(BuildContext context, String message){
   ScaffoldMessenger.of(context).showSnackBar(
      SnackBar(
       content: Text(message),
+       showCloseIcon: true,
+       closeIconColor: lightColorScheme.surface,
     ),
   );
 }
