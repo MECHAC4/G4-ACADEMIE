@@ -41,7 +41,7 @@ class CustomScaffold extends StatelessWidget {
       floatingActionButton: (buttonExist != null && buttonExist!)
           ? FloatingActionButton(
               onPressed: () {
-                if(appUser?.userType == "Parent d'élève"){
+                if(appUser?.userType == "Parent d'élève" || appUser?.userType =="Elève"){
                   showProfileDialog(context, appUser!.id, appUser!.address);
                 }
               },

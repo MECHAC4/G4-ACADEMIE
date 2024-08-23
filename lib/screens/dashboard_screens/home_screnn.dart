@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:g4_academie/screens/dashboard_screens/builder/add_cours_builder.dart';
 import 'package:g4_academie/screens/dashboard_screens/builder/cours_builder.dart';
+import 'package:g4_academie/screens/dashboard_screens/builder/notification_icon_builder.dart';
 import 'package:g4_academie/screens/dashboard_screens/builder/week_program_builder.dart';
+import 'package:g4_academie/screens/notification/courses_notification_screen.dart';
 import 'package:g4_academie/services/profil_services.dart';
 import 'package:g4_academie/theme/theme.dart';
 import 'package:g4_academie/widgets/custom_scaffold.dart';
 
+import '../../app_UI.dart';
 import '../../profil_class.dart';
 import '../../users.dart';
 
 class DashboardPage extends StatefulWidget {
   final AppUser appUser;
+  final AppUser admin;
 
-  const DashboardPage({super.key, required this.appUser});
+  const DashboardPage({super.key, required this.appUser, required this.admin});
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -37,11 +41,26 @@ class _DashboardPageState extends State<DashboardPage>
     _appUser = widget.appUser;
     _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
     loadProfiles();
+    createMainProfile();
   }
 
   void loadProfiles() async {
     profiles = await ProfilServices().fetchProfiles(_appUser.id);
     setState(() {});
+  }
+
+  void createMainProfile() async {
+    bool mainProfilExist =
+        await ProfilServices().profilExist(widget.appUser.id);
+    print("Profil existant ? : $mainProfilExist");
+    if (!mainProfilExist) {
+      ProfilServices().saveProfileToFirestore({
+        'firstName': _appUser.firstName,
+        'lastName': _appUser.lastName,
+        'studentClass': _appUser.studentClass,
+        'adresse': _appUser.address,
+      }, _appUser.id);
+    }
   }
 
   late TabController _tabController;
@@ -53,59 +72,86 @@ class _DashboardPageState extends State<DashboardPage>
 
     return CustomScaffold(
       appUser: _appUser,
-      buttonExist: true,
+      buttonExist: _appUser.userType == "Parent d'élève",
       child: DefaultTabController(
         length: 2,
         child: Column(
           children: [
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 TextButton(
                     onPressed: () {},
                     child: Text(
-                      selectedProfile == null
-                          ? '${_appUser.firstName.toUpperCase()} ${_appUser.lastName.toUpperCase()}'
-                          : selectedProfile!.isGroup
-                              ? '${selectedProfile?.groupName}'
-                              : '${selectedProfile?.firstName} ${selectedProfile?.lastName}',
+                      ((selectedProfile == null) || (selectedProfile?.firstName == _appUser.firstName &&
+                          selectedProfile?.lastName == _appUser.lastName &&
+                          selectedProfile?.adresse == _appUser.address &&
+                          selectedProfile?.studentClass ==
+                              _appUser.studentClass))
+                          ? 'Profil principal' /*'${_appUser.firstName.toUpperCase()} ${_appUser.lastName.toUpperCase()}'*/
+                          : '${selectedProfile?.firstName} ${selectedProfile?.lastName}',
                       style: TextStyle(
                         color: lightColorScheme.surface,
                       ),
                     )),
-                DropdownButton<ProfilClass>(
-                  underline: const SizedBox(),
-                  icon: Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    color: lightColorScheme.surface,
-                  ),
-                  onTap: () {
-                    setState(() {
-                      loadProfiles();
-                    });
-                  },
-                  hint: Text(
-                    'Changer de profil',
-                    style: TextStyle(
-                      color: lightColorScheme.surface,
-                    ),
-                  ),
-                  //value: selectedProfile,
-                  onChanged: (ProfilClass? newProfile) {
-                    setState(() {
-                      selectedProfile = newProfile;
-                      print("*************${newProfile?.adresse}*********");
-                    });
-                  },
-                  items: profiles.map((ProfilClass profile) {
-                    return DropdownMenuItem<ProfilClass>(
-                      value: profile,
-                      child: Text(profile.isGroup
-                          ? profile.groupName ?? 'Groupe'
-                          : profile.firstName ?? 'Individuel'),
-                    );
-                  }).toList(),
-                ),
+                _appUser.userType == "Elève"||  _appUser.userType == "Enseignant"
+                    ? TextButton(
+                        onPressed: () {
+                          Navigator.of(context).push(MaterialPageRoute(builder: (context) => AppUI(appUser: widget.appUser,index : 3),));
+                        },
+                        child: Row(
+                          children: [
+                            Text(
+                              "Modifier mon profil",
+                              style: TextStyle(color: lightColorScheme.surface),
+                            ),
+                            Icon(
+                              Icons.edit,
+                              color: lightColorScheme.surface,
+                            ),
+                          ],
+                        ),
+                      )
+                    : DropdownButton<ProfilClass>(
+                        underline: const SizedBox(),
+                        icon: Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: lightColorScheme.surface,
+                        ),
+                        onTap: () {
+                          setState(() {
+                            loadProfiles();
+                          });
+                        },
+                        hint: Text(
+                          'Changer de profil',
+                          style: TextStyle(
+                            color: lightColorScheme.surface,
+                          ),
+                        ),
+                        //value: selectedProfile,
+                        onChanged: (ProfilClass? newProfile) {
+                          setState(() {
+                            selectedProfile = newProfile;
+                            print(
+                                "*************${newProfile?.adresse}*********");
+                          });
+                        },
+                        items: profiles.map((ProfilClass profile) {
+                          return DropdownMenuItem<ProfilClass>(
+                            value: profile,
+                            child: Text(
+                                (profile.firstName == _appUser.firstName &&
+                                        profile.lastName == _appUser.lastName &&
+                                        profile.adresse == _appUser.address &&
+                                        profile.studentClass ==
+                                            _appUser.studentClass)
+                                    ? 'Profil principal'
+                                    : profile.firstName + profile.lastName),
+                          );
+                        }).toList(),
+                      ),
               ],
             ),
             Padding(padding: EdgeInsets.only(top: width / 50)),
@@ -114,41 +160,30 @@ class _DashboardPageState extends State<DashboardPage>
               children: [
                 TextButton(
                     onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(
+                      if(_appUser.userType != "Enseignant") {
+                        Navigator.of(context).push(MaterialPageRoute(
                         builder: (context) => AddCourseDialog(
                           profiles: profiles,
-                          userId: _appUser.id,
+                          appUser: _appUser,
+                          //userId: _appUser.id,
                         ),
                       ));
+                      }else{
+                        Navigator.of(context).push(MaterialPageRoute(builder: (context) =>  NotificationsPage(appUser: widget.appUser,admin: widget.admin,),));
+                      }
                     },
                     child: Text(
-                      "Ajouter un cours",
+                      _appUser.userType != "Enseignant"?
+                      "Ajouter un cours": "Notifications",
                       style: TextStyle(
                           color: lightColorScheme.surface,
-                          //fontWeight: FontWeight.w600,
                           fontSize: height / 45),
                     )),
                 IconButton(
-                    onPressed: () {},
-                    icon: Stack(
-                      children: [
-                        Container(
-                          margin: EdgeInsets.only(
-                            left: width / 25,
-                          ),
-                          child: Text(
-                            "2",
-                            style: TextStyle(
-                                color: lightColorScheme.error.withOpacity(1)),
-                          ),
-                        ),
-                        Icon(
-                          size: height / 35,
-                          Icons.notifications,
-                          color: lightColorScheme.surface,
-                        ),
-                      ],
-                    ))
+                    onPressed: () {
+                      Navigator.of(context).push(MaterialPageRoute(builder: (context) =>  NotificationsPage(appUser: widget.appUser,admin: widget.admin,),));
+                    },
+                    icon: NotificationsIcon(userId: _appUser.id,))
               ],
             ),
             Padding(padding: EdgeInsets.only(top: width / 50)),
@@ -183,8 +218,11 @@ class _DashboardPageState extends State<DashboardPage>
                     topRight: Radius.circular(40.0),
                   ),
                 ),
-                child: TabBarView(controller: _tabController, children:  [
-                  CoursBuilder(userId: _appUser.id,selectedProfile: selectedProfile,),
+                child: TabBarView(controller: _tabController, children: [
+                  CoursBuilder(
+                    userId: _appUser.id,
+                    selectedProfile: selectedProfile,
+                  ),
                   const WeekProgramBuilder(),
                 ]),
               ),

@@ -8,12 +8,10 @@ void showProfileDialog(BuildContext context, String uid, String adresse) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
-      bool isGroup = false;
+      //bool isGroup = false;
       String firstName = '';
       String lastName = '';
-      String groupName = '';
       String studentClass = '';
-      String studentCount = '';
 
       return StatefulBuilder(
         builder: (context, setState) {
@@ -44,7 +42,7 @@ void showProfileDialog(BuildContext context, String uid, String adresse) {
                           ),
                         ],
                       ),
-                      SwitchListTile(
+                      /*SwitchListTile(
                         title: const Text('Créer un groupe'),
                         value: isGroup,
                         onChanged: (bool value) {
@@ -52,8 +50,8 @@ void showProfileDialog(BuildContext context, String uid, String adresse) {
                             isGroup = value;
                           });
                         },
-                      ),
-                      if (!isGroup) ...[
+                      ),*/
+  /*if (!isGroup) ...[*/
                         TextField(
                           decoration: const InputDecoration(labelText: 'Prénom'),
                           onChanged: (value) {
@@ -72,30 +70,28 @@ void showProfileDialog(BuildContext context, String uid, String adresse) {
                             studentClass = value;
                           },
                         ),
-                      ] else ...[
+          /* ] else ...[
                         TextField(
                           decoration: const InputDecoration(labelText: 'Nom du groupe'),
                           onChanged: (value) {
-                            groupName = value;
                           },
                         ),
                         TextField(
                           decoration: const InputDecoration(labelText: 'Nombre maximum de personnes'),
                           onChanged: (value) {
-                            studentCount = value;
                           },
                         ),
-                      ],
+                      ],*/
                       const SizedBox(height: 20),
                       ElevatedButton(
                         onPressed: () {
                           ProfilServices().saveProfileToFirestore({
-                            "isGroup": isGroup,
-                            "firstName": isGroup ? null : firstName,
-                            "lastName": isGroup ? null : lastName,
-                            "groupName": isGroup ? groupName : null,
+                            //"isGroup": isGroup,
+                            "firstName":  firstName,
+                            "lastName":  lastName,
+                           // "groupName": isGroup ? groupName : null,
                             "studentClass": studentClass,
-                            "studentCount": isGroup ? studentCount : null,
+                            //"studentCount": isGroup ? studentCount : null,
                             "adresse": adresse,
                           },uid);
                           Navigator.of(context).pop();

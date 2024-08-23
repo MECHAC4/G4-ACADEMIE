@@ -22,6 +22,7 @@ class AuthService {
       String address,
       String userType, {
         List<String>? subject,
+        String? studentClass,
       }) async {
     try {
       debugPrint("************************sign in...*************************");
@@ -42,6 +43,7 @@ class AuthService {
         'emailOrPhone': email,
         'password': password,
         'subject': subject,
+        'studentClass': studentClass,
       });
 
       return AppUser(
@@ -53,6 +55,7 @@ class AuthService {
         emailOrPhone: email,
         password: password,
         subject: subject,
+        studentClass: studentClass,
       );
 
     } on FirebaseAuthException catch (e) {
@@ -188,6 +191,7 @@ class AuthService {
       String address,
       String userType, {
         List<String>? subject,
+        String? studentClass,
       }) async {
     try {
       //String encryptedPassword = _encryptionService.encryptPassword(password);
@@ -201,6 +205,7 @@ class AuthService {
         'emailOrPhone': phone,
         'password': password,
         'subject': subject,
+        'studentClass': studentClass,
       });
       return AppUser(
         id : uid,
@@ -211,6 +216,7 @@ class AuthService {
         emailOrPhone: phone,
         password: password,
         subject: subject,
+        studentClass: studentClass,
       );
     } catch (e) {
       print(e.toString());
@@ -242,6 +248,24 @@ class AuthService {
       print('Erreur lors de la récupération de l\'utilisateur : $e');
       return null;
     }
+  }
+
+
+  Future<AppUser?> getAdmin()async{
+   QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('users')
+        .where('lastName', isEqualTo: 'admin')
+        .where('firstName', isEqualTo: 'admin')
+        .where('address', isEqualTo: 'admin')
+        .get();
+   List<QueryDocumentSnapshot> adminDocs = querySnapshot.docs;
+   if(adminDocs.isEmpty || adminDocs.length>1){
+
+     return null;
+   }else{
+     final data = adminDocs[0].data() as Map<String, dynamic>;
+     return AppUser.fromMap(data, adminDocs[0].id);
+   }
+
   }
 
 

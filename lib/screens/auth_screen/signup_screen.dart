@@ -314,6 +314,51 @@ class _SignUpScreenState extends State<SignUpScreen>
                                 ),
                               ),
 
+
+
+                            if(_selectedUserType == usersType[0])
+                              const SizedBox(
+                                height: 25,
+                              ),
+                            if(_selectedUserType == usersType[0])
+                              TextFormField(
+                                controller: studentClassController,
+                                validator: (value) {
+                                  if (_selectedUserType == usersType[0] && (value == null || value.isEmpty)) {
+                                    return 'Entrez votre classe';
+                                  }
+                                  return null;
+                                },
+                                decoration: InputDecoration(
+                                  label: const Text('Classe'),
+                                  hintText: 'Entrer votre classe',
+                                  hintStyle: const TextStyle(
+                                    color: Colors.black26,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                      color:
+                                      Colors.black12, // Default border color
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                      color:
+                                      Colors.black12, // Default border color
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              ),
+
+
+
+
+
+
+
+
                             const SizedBox(
                               height: 25.0,
                             ),
@@ -592,7 +637,9 @@ class _SignUpScreenState extends State<SignUpScreen>
                                       prenomController.text,
                                       adresseController.text,
                                       _selectedUserType!,
-                                      subject: subject)
+                                      subject: subject,
+                                studentClass: studentClassController.text,
+                              )
                                   : await signUpWithPhoneNumber(
                                       context,
                                       phoneNumberController.text.trim(),
@@ -601,7 +648,9 @@ class _SignUpScreenState extends State<SignUpScreen>
                                       prenomController.text,
                                       adresseController.text,
                                       _selectedUserType!,
-                                      subject: subject);
+                                      subject: subject,
+                                studentClass: studentClassController.text,
+                              );
                               setState(() {});
                               setState(() {});
                               setState(() {});
@@ -827,16 +876,17 @@ class _SignUpScreenState extends State<SignUpScreen>
       String lastName,
       String address,
       String userType,
-      {List<String>? subject}) async {
+      {List<String>? subject, String? studentClass}) async {
     _appUser = await AuthService().registerWithEmail(
         context, email, password, firstName, lastName, address, userType,
-        subject: subject);
+        subject: subject, studentClass: studentClass);
     setState(() {
       _appUser = _appUser;
     });
   }
 
   bool isPhoneNumberVerified = false;
+  final TextEditingController studentClassController = TextEditingController();
 
   Future<void> signUpWithPhoneNumber(
       BuildContext context,
@@ -846,10 +896,10 @@ class _SignUpScreenState extends State<SignUpScreen>
       String lastName,
       String address,
       String userType,
-      {List<String>? subject}) async {
+      {List<String>? subject, String? studentClass}) async {
     _appUser = await AuthService().registerWithPhone(
         context, uid!, phone, password, firstName, lastName, address, userType,
-        subject: subject);
+        subject: subject, studentClass: studentClass);
     setState(() {
       _appUser = _appUser;
     });

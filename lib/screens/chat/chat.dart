@@ -1,124 +1,209 @@
-import 'package:flutter/material.dart';
-import 'package:g4_academie/theme/theme.dart';
+import 'dart:io';
 
-class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:image_picker/image_picker.dart';
+
+import '../../services/message_service/chat_params.dart';
+import '../../services/message_service/message.dart';
+import '../../services/message_service/message_database.dart';
+import 'message_item.dart';
+
+class Chat extends StatefulWidget {
+  final ChatParams chatParams;
+  const Chat({super.key, required this.chatParams});
 
   @override
-  State<ChatScreen> createState() => _ChatScreenState();
+  State<Chat> createState() => _ChatState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
-  List<Map<String, String>> messages = [
-    {'role': 'assistant', 'text': 'Bonjour, comment puis-je vous aider ?'},
-  ];
+class _ChatState extends State<Chat> {
+  final MessageDatabaseService messageService = MessageDatabaseService();
 
-  final TextEditingController _controller = TextEditingController();
+  //_ChatState(this.chatParams);
 
-  void _sendMessage() {
-    if (_controller.text.isNotEmpty) {
+  late ChatParams chatParams;
+
+  final TextEditingController textEditingController = TextEditingController();
+  final ScrollController listScrollController = ScrollController();
+
+  int _nbElement = 20;
+  static const int paginationIncrement = 20;
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    chatParams = widget.chatParams;
+    listScrollController.addListener(_scrollListener);
+  }
+
+  _scrollListener() {
+    if (listScrollController.offset >=
+            listScrollController.position.maxScrollExtent &&
+        !listScrollController.position.outOfRange) {
       setState(() {
-        messages.add({'role': 'user', 'text': _controller.text});
-        _controller.clear();
-        // Simulate assistant's response
-        Future.delayed(const Duration(seconds: 1), () {
-          setState(() {
-            messages.add({
-              'role': 'assistant',
-              'text':
-                  'Merci pour votre message, je vais vous répondre sous peu.'
-            });
-          });
-        });
+        _nbElement += paginationIncrement;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        actions: [
-          IconButton(
-              onPressed: () {
-                setState(() {
-                  messages = [
-                    {
-                      'role': 'assistant',
-                      'text': 'Bonjour, comment puis-je vous aider ?'
-                    },
-                  ];
-                });
-              },
-              icon: Icon(
-                Icons.add,
-                color: lightColorScheme.surface,
-              ))
-        ],
-        leading: Icon(
-          Icons.chat,
-          color: lightColorScheme.surface,
+    return Stack(
+      children: [
+        Column(
+          children: [buildListMessage(), buildInput()],
         ),
-        title: Text(
-          "Assistant",
-          style: TextStyle(color: lightColorScheme.surface),
-        ),
-        backgroundColor: lightColorScheme.primary,
+        isLoading ? const CircularProgressIndicator() : Container()
+      ],
+    );
+  }
+
+  Widget buildListMessage() {
+    return Flexible(
+      child: StreamBuilder<List<Message>>(
+        stream:
+            messageService.getMessage(chatParams.getChatGroupId(), _nbElement),
+        builder: (BuildContext context, AsyncSnapshot<List<Message>> snapshot) {
+          if (snapshot.hasData) {
+            List<Message> listMessage = snapshot.data ?? List.from([]);
+            return ListView.builder(
+              padding: const EdgeInsets.all(10.0),
+              itemBuilder: (context, index) => MessageItem(
+                  message: listMessage[index],
+                  userId: chatParams.userUid,
+                  isLastMessage: isLastMessage(index, listMessage)),
+              itemCount: listMessage.length,
+              reverse: true,
+              controller: listScrollController,
+            );
+          } else {
+            return const Center(child:  CircularProgressIndicator());
+          }
+        },
       ),
-      body: Column(
+    );
+  }
+
+  bool isLastMessage(int index, List<Message> listMessage) {
+    if (index == 0) return true;
+    if (listMessage[index].idFrom != listMessage[index - 1].idFrom) return true;
+    return false;
+  }
+
+  Widget buildInput() {
+    return Container(
+      width: double.infinity,
+      height: 75.0,
+      margin: const EdgeInsets.symmetric(horizontal: 10),
+      decoration:  BoxDecoration(
+          border: Border.all(color: Colors.black26),
+          borderRadius: const BorderRadius.all(Radius.circular(15)),
+          color: Colors.white),
+      child: Row(
         children: [
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16.0),
-              itemCount: messages.length,
-              itemBuilder: (context, index) {
-                final message = messages[index];
-                final isUser = message['role'] == 'user';
-                return Align(
-                  alignment:
-                      isUser ? Alignment.centerRight : Alignment.centerLeft,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 5.0),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10.0, horizontal: 14.0),
-                    decoration: BoxDecoration(
-                      color: isUser ? Colors.blue[100] : Colors.grey[200],
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    child: Text(message['text']!),
-                  ),
-                );
-              },
+          Material(
+            color: Colors.white,
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 1.0),
+              child: IconButton(
+                icon: const Icon(Icons.image),
+                onPressed: getImage,
+                color: Colors.blueGrey,
+              ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    maxLines: null,
-                    controller: _controller,
-                    decoration: InputDecoration(
-                      hintText: 'Tapez votre message...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20.0),
-                      ),
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.send,
-                    color: lightColorScheme.primary,
-                  ),
-                  onPressed: _sendMessage,
-                ),
-              ],
+          Flexible(
+            child: TextField(
+              onSubmitted: (value) {
+                onSendMessage(textEditingController.text, 0);
+              },
+              style: const TextStyle(color: Colors.blueGrey, fontSize: 15.0),
+              controller: textEditingController,
+              decoration: const InputDecoration.collapsed(
+                hintText: 'Votre message...',
+                hintStyle: TextStyle(color: Colors.grey),
+              ),
+            ),
+          ),
+          // Button send message
+          Material(
+            color: Colors.white,
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: IconButton(
+                icon: const Icon(Icons.send),
+                onPressed: () => onSendMessage(textEditingController.text, 0),
+                color: Colors.blueGrey,
+              ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  Future getImage() async {
+    ImagePicker imagePicker = ImagePicker();
+    XFile? pickedFile =
+        await imagePicker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        isLoading = true;
+      });
+      uploadFile(pickedFile);
+    }
+  }
+
+  Future uploadFile(XFile file) async {
+    String fileName =
+        "${DateTime.now().millisecondsSinceEpoch}.jpeg";
+    try {
+      Reference reference = FirebaseStorage.instance.ref().child(fileName);
+      final metadata = SettableMetadata(
+          contentType: 'image/jpeg',
+          customMetadata: {'picked-file-path': file.path});
+      TaskSnapshot snapshot;
+      if (kIsWeb) {
+        snapshot = await reference.putData(await file.readAsBytes(), metadata);
+      } else {
+        snapshot = await reference.putFile(File(file.path), metadata);
+      }
+
+      String imageUrl = await snapshot.ref.getDownloadURL();
+      setState(() {
+        isLoading = false;
+        onSendMessage(imageUrl, 1);
+      });
+    } on Exception {
+      setState(() {
+        isLoading = false;
+      });
+      Fluttertoast.showToast(msg: "Une erreur s'est produite; Veillez reessayer!");
+    }
+  }
+
+  void onSendMessage(String content, int type) {
+    if (content.trim() != '') {
+      messageService.onSendMessage(
+          chatParams.getChatGroupId(),
+          Message(
+              idFrom: chatParams.userUid,
+              idTo: chatParams.peer.id,
+              timestamp: DateTime.now().millisecondsSinceEpoch.toString(),
+              content: content,
+              type: type));
+      listScrollController.animateTo(0.0,
+          duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+      textEditingController.clear();
+    } else {
+      Fluttertoast.showToast(
+          msg: 'Saisissez un message à envoyer',
+          backgroundColor: Colors.red,
+          textColor: Colors.white);
+    }
   }
 }

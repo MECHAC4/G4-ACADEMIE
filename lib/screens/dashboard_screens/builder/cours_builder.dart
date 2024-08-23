@@ -22,6 +22,12 @@ class _CoursBuilderState extends State<CoursBuilder> {
   void initState() {
     super.initState();
     _updateCoursesStream();
+    loading();
+  }
+
+  void loading()async{
+    final data = await FirebaseFirestore.instance.collection('users').doc(widget.userId).collection('profil').doc(widget.userId).get();
+    print("données récupérées : ${data.exists}");
   }
 
   @override
@@ -33,7 +39,7 @@ class _CoursBuilderState extends State<CoursBuilder> {
   }
 
   void _updateCoursesStream() {
-    if (widget.selectedProfile == null) {
+    if ( widget.selectedProfile==null || widget.selectedProfile?.id == widget.userId) {
       _coursStream = FirebaseFirestore.instance
           .collection('users')
           .doc(widget.userId)
@@ -42,6 +48,10 @@ class _CoursBuilderState extends State<CoursBuilder> {
           .asyncMap((profilSnapshot) async {
         List<DocumentSnapshot> profiles = profilSnapshot.docs;
         List<Cours> allCourses = [];
+        print("************Taille des profiles*${profiles.length}");
+        print("************liste des profils*$profiles");
+        print("id de l'utilisateur: ${widget.userId}");
+
 
         for (var profile in profiles) {
           var coursesSnapshot = await FirebaseFirestore.instance
@@ -52,9 +62,13 @@ class _CoursBuilderState extends State<CoursBuilder> {
               .collection('courses')
               .get();
 
+          print("************LONGUEUR DES DOCS*${coursesSnapshot.docs.length}");
+
+
           allCourses.addAll(coursesSnapshot.docs
               .map((doc) => Cours.fromMap(doc.data())));
         }
+        print("*************LONGUEUR DES COURS${allCourses.length}");
 
         return allCourses;
       });

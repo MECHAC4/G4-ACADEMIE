@@ -1,16 +1,20 @@
-
 import 'package:flutter/material.dart';
+import 'package:g4_academie/courses_notification.dart';
 import 'package:g4_academie/profil_class.dart';
 import 'package:g4_academie/services/cours_services.dart';
+import 'package:g4_academie/services/notification_service/courses_not_services.dart';
 import 'package:g4_academie/services/verification.dart';
+import 'package:g4_academie/users.dart';
 
+import '../../../app_UI.dart';
 import '../../../theme/theme.dart';
 
 class AddCourseDialog extends StatefulWidget {
-  final String userId;
+  final AppUser appUser;
   final List<ProfilClass> profiles;
 
-  const AddCourseDialog({super.key, required this.userId, required this.profiles});
+  const AddCourseDialog(
+      {super.key, required this.appUser, required this.profiles});
 
   @override
   State<AddCourseDialog> createState() => _AddCourseDialogState();
@@ -30,10 +34,18 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
 
   // Controllers for week duration inputs
   final List<TextEditingController> _dayControllers = [TextEditingController()];
-  final List<TextEditingController> _startHourControllers = [TextEditingController()];
-  final List<TextEditingController> _startMinuteControllers = [TextEditingController()];
-  final List<TextEditingController> _endHourControllers = [TextEditingController()];
-  final List<TextEditingController> _endMinuteControllers = [TextEditingController()];
+  final List<TextEditingController> _startHourControllers = [
+    TextEditingController()
+  ];
+  final List<TextEditingController> _startMinuteControllers = [
+    TextEditingController()
+  ];
+  final List<TextEditingController> _endHourControllers = [
+    TextEditingController()
+  ];
+  final List<TextEditingController> _endMinuteControllers = [
+    TextEditingController()
+  ];
 
   @override
   void dispose() {
@@ -65,6 +77,14 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
       _endMinuteControllers.add(TextEditingController());
     });
   }*/
+  late String uid;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    uid = widget.appUser.id;
+  }
 
   void _clearFields() {
     for (var controller in _dayControllers) {
@@ -100,7 +120,10 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
         ),
         title: Text(
           "Ajouter un cours",
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: lightColorScheme.surface),
+          style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: lightColorScheme.surface),
         ),
         centerTitle: true,
       ),
@@ -110,55 +133,56 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [
-              const SizedBox(height: 10,),
-              Container(
-                height: 65,
-                padding: const EdgeInsets.only(left: 5, right: 5),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black26),
-                  borderRadius: const BorderRadius.all(Radius.circular(10)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      selectedProfile == null
-                          ? 'Aucun profil sélectionné'
-                          : selectedProfile!.isGroup
-                          ? '${selectedProfile?.groupName}'
-                          : '${selectedProfile?.firstName} ${selectedProfile?.lastName}',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    DropdownButton<ProfilClass>(
-                      underline: const SizedBox(),
-                      icon: const Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        //color: lightColorScheme.surface,
-                      ),
-                      hint: Text(
-                        'Choisir un profil',
-                        style: TextStyle(
-                          color: lightColorScheme.primary,
-                        ),
-                      ),
-                      onChanged: (ProfilClass? newProfile) {
-                        setState(() {
-                          selectedProfile = newProfile;
-                        });
-                      },
-                      items: widget.profiles.map((ProfilClass profile) {
-                        return DropdownMenuItem<ProfilClass>(
-                          value: profile,
-                          child: Text(profile.isGroup
-                              ? profile.groupName ?? 'Groupe'
-                              : profile.firstName ?? 'Individuel'),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
+              const SizedBox(
+                height: 10,
               ),
-              const SizedBox(height: 10,),
+              if (widget.appUser.userType == "Parent d'élève")
+                Container(
+                  height: 65,
+                  padding: const EdgeInsets.only(left: 5, right: 5),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black26),
+                    borderRadius: const BorderRadius.all(Radius.circular(10)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        selectedProfile == null
+                            ? 'Aucun profil sélectionné'
+                            : '${selectedProfile?.firstName} ${selectedProfile?.lastName}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      DropdownButton<ProfilClass>(
+                        underline: const SizedBox(),
+                        icon: const Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          //color: lightColorScheme.surface,
+                        ),
+                        hint: Text(
+                          'Choisir un profil',
+                          style: TextStyle(
+                            color: lightColorScheme.primary,
+                          ),
+                        ),
+                        onChanged: (ProfilClass? newProfile) {
+                          setState(() {
+                            selectedProfile = newProfile;
+                          });
+                        },
+                        items: widget.profiles.map((ProfilClass profile) {
+                          return DropdownMenuItem<ProfilClass>(
+                            value: profile,
+                            child: Text(profile.firstName),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                ),
+              const SizedBox(
+                height: 10,
+              ),
               Form(
                 key: _formKey,
                 child: Column(
@@ -171,15 +195,13 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                         ),
                         border: OutlineInputBorder(
                           borderSide: const BorderSide(
-                            color:
-                            Colors.black12, // Default border color
+                            color: Colors.black12, // Default border color
                           ),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderSide: const BorderSide(
-                            color:
-                            Colors.black12, // Default border color
+                            color: Colors.black12, // Default border color
                           ),
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -212,7 +234,9 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                       height: 25.0,
                     ),
                     if (isProgramFixed) ...[
-                      for (int index = 0; index < _dayControllers.length; index++)
+                      for (int index = 0;
+                          index < _dayControllers.length;
+                          index++)
                         Column(
                           children: [
                             DropdownButtonFormField<String>(
@@ -229,23 +253,23 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                                 'Dimanche'
                               ]
                                   .map((day) => DropdownMenuItem(
-                                value: day,
-                                child: Text(day),
-                              ))
+                                        value: day,
+                                        child: Text(day),
+                                      ))
                                   .toList(),
                               decoration: InputDecoration(
                                 labelText: "Jour",
                                 border: OutlineInputBorder(
                                   borderSide: const BorderSide(
                                     color:
-                                    Colors.black12, // Default border color
+                                        Colors.black12, // Default border color
                                   ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderSide: const BorderSide(
                                     color:
-                                    Colors.black12, // Default border color
+                                        Colors.black12, // Default border color
                                   ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -289,35 +313,41 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                               children: [
                                 Expanded(
                                   child: DropdownButtonFormField<String>(
-                                    value: _startHourControllers[index].text.isEmpty
+                                    value: _startHourControllers[index]
+                                            .text
+                                            .isEmpty
                                         ? null
                                         : _startHourControllers[index].text,
-                                    items: List.generate(24, (hour) => hour.toString().padLeft(2, '0'))
+                                    items: List.generate(
+                                            24,
+                                            (hour) =>
+                                                hour.toString().padLeft(2, '0'))
                                         .map((hour) => DropdownMenuItem(
-                                      value: hour,
-                                      child: Text(hour),
-                                    ))
+                                              value: hour,
+                                              child: Text(hour),
+                                            ))
                                         .toList(),
                                     decoration: InputDecoration(
                                       labelText: "Heure",
                                       border: OutlineInputBorder(
                                         borderSide: const BorderSide(
-                                          color:
-                                          Colors.black12, // Default border color
+                                          color: Colors
+                                              .black12, // Default border color
                                         ),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderSide: const BorderSide(
-                                          color:
-                                          Colors.black12, // Default border color
+                                          color: Colors
+                                              .black12, // Default border color
                                         ),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                     ),
                                     onChanged: (value) {
                                       setState(() {
-                                        _startHourControllers[index].text = value!;
+                                        _startHourControllers[index].text =
+                                            value!;
                                       });
                                     },
                                   ),
@@ -325,35 +355,42 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: DropdownButtonFormField<String>(
-                                    value: _startMinuteControllers[index].text.isEmpty
+                                    value: _startMinuteControllers[index]
+                                            .text
+                                            .isEmpty
                                         ? null
                                         : _startMinuteControllers[index].text,
-                                    items: List.generate(60, (minute) => minute.toString().padLeft(2, '0'))
+                                    items: List.generate(
+                                            60,
+                                            (minute) => minute
+                                                .toString()
+                                                .padLeft(2, '0'))
                                         .map((minute) => DropdownMenuItem(
-                                      value: minute,
-                                      child: Text(minute),
-                                    ))
+                                              value: minute,
+                                              child: Text(minute),
+                                            ))
                                         .toList(),
                                     decoration: InputDecoration(
                                       labelText: "Minute",
                                       border: OutlineInputBorder(
                                         borderSide: const BorderSide(
-                                          color:
-                                          Colors.black12, // Default border color
+                                          color: Colors
+                                              .black12, // Default border color
                                         ),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderSide: const BorderSide(
-                                          color:
-                                          Colors.black12, // Default border color
+                                          color: Colors
+                                              .black12, // Default border color
                                         ),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                     ),
                                     onChanged: (value) {
                                       setState(() {
-                                        _startMinuteControllers[index].text = value!;
+                                        _startMinuteControllers[index].text =
+                                            value!;
                                       });
                                     },
                                   ),
@@ -393,35 +430,40 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                               children: [
                                 Expanded(
                                   child: DropdownButtonFormField<String>(
-                                    value: _endHourControllers[index].text.isEmpty
-                                        ? null
-                                        : _endHourControllers[index].text,
-                                    items: List.generate(24, (hour) => hour.toString().padLeft(2, '0'))
+                                    value:
+                                        _endHourControllers[index].text.isEmpty
+                                            ? null
+                                            : _endHourControllers[index].text,
+                                    items: List.generate(
+                                            24,
+                                            (hour) =>
+                                                hour.toString().padLeft(2, '0'))
                                         .map((hour) => DropdownMenuItem(
-                                      value: hour,
-                                      child: Text(hour),
-                                    ))
+                                              value: hour,
+                                              child: Text(hour),
+                                            ))
                                         .toList(),
                                     decoration: InputDecoration(
                                       labelText: "Heure",
                                       border: OutlineInputBorder(
                                         borderSide: const BorderSide(
-                                          color:
-                                          Colors.black12, // Default border color
+                                          color: Colors
+                                              .black12, // Default border color
                                         ),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderSide: const BorderSide(
-                                          color:
-                                          Colors.black12, // Default border color
+                                          color: Colors
+                                              .black12, // Default border color
                                         ),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                     ),
                                     onChanged: (value) {
                                       setState(() {
-                                        _endHourControllers[index].text = value!;
+                                        _endHourControllers[index].text =
+                                            value!;
                                       });
                                     },
                                   ),
@@ -429,35 +471,42 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: DropdownButtonFormField<String>(
-                                    value: _endMinuteControllers[index].text.isEmpty
+                                    value: _endMinuteControllers[index]
+                                            .text
+                                            .isEmpty
                                         ? null
                                         : _endMinuteControllers[index].text,
-                                    items: List.generate(60, (minute) => minute.toString().padLeft(2, '0'))
+                                    items: List.generate(
+                                            60,
+                                            (minute) => minute
+                                                .toString()
+                                                .padLeft(2, '0'))
                                         .map((minute) => DropdownMenuItem(
-                                      value: minute,
-                                      child: Text(minute),
-                                    ))
+                                              value: minute,
+                                              child: Text(minute),
+                                            ))
                                         .toList(),
                                     decoration: InputDecoration(
                                       labelText: "Minute",
                                       border: OutlineInputBorder(
                                         borderSide: const BorderSide(
-                                          color:
-                                          Colors.black12, // Default border color
+                                          color: Colors
+                                              .black12, // Default border color
                                         ),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderSide: const BorderSide(
-                                          color:
-                                          Colors.black12, // Default border color
+                                          color: Colors
+                                              .black12, // Default border color
                                         ),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                     ),
                                     onChanged: (value) {
                                       setState(() {
-                                        _endMinuteControllers[index].text = value!;
+                                        _endMinuteControllers[index].text =
+                                            value!;
                                       });
                                     },
                                   ),
@@ -471,9 +520,9 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                                   weekDuration.add({
                                     'day': _dayControllers[index].text,
                                     'startTime':
-                                    '${_startHourControllers[index].text}:${_startMinuteControllers[index].text}',
+                                        '${_startHourControllers[index].text}:${_startMinuteControllers[index].text}',
                                     'endTime':
-                                    '${_endHourControllers[index].text}:${_endMinuteControllers[index].text}',
+                                        '${_endHourControllers[index].text}:${_endMinuteControllers[index].text}',
                                   });
                                   _clearFields();
                                 });
@@ -487,14 +536,17 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                         title: const Text("Programme du cours"),
                         children: weekDuration
                             .map((schedule) => ListTile(
-                          trailing: IconButton(onPressed: (){
-                            setState(() {
-                              weekDuration.removeAt(weekDuration.indexOf(schedule));
-                            });
-                          }, icon: const Icon(Icons.delete)),
-                          title: Text(
-                              '${schedule['day']} de ${schedule['startTime']} à ${schedule['endTime']}'),
-                        ))
+                                  trailing: IconButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          weekDuration.removeAt(
+                                              weekDuration.indexOf(schedule));
+                                        });
+                                      },
+                                      icon: const Icon(Icons.delete)),
+                                  title: Text(
+                                      '${schedule['day']} de ${schedule['startTime']} à ${schedule['endTime']}'),
+                                ))
                             .toList(),
                       ),
                     ] else ...[
@@ -507,15 +559,13 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                           ),
                           border: OutlineInputBorder(
                             borderSide: const BorderSide(
-                              color:
-                              Colors.black12, // Default border color
+                              color: Colors.black12, // Default border color
                             ),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderSide: const BorderSide(
-                              color:
-                              Colors.black12, // Default border color
+                              color: Colors.black12, // Default border color
                             ),
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -547,24 +597,66 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                               _formKey.currentState!.save();
 
                               // Collect weekDuration data if program is fixed
-                              if (selectedProfile != null) {
+                              if ((widget.appUser.userType ==
+                                          "Parent d'élève" &&
+                                      selectedProfile != null) ||
+                                  (widget.appUser.userType == "Elève")) {
                                 // Stocker les informations dans Firestore
                                 CoursServices().saveCoursToFirestore({
-                                  'adresse': selectedProfile!.adresse,
-                                  'appUserId': widget.userId,
-                                  'profilId': selectedProfile!.id,
+                                  'adresse': widget.appUser.userType == "Elève"
+                                      ? widget.appUser.address
+                                      : selectedProfile!.adresse,
+                                  'appUserId': uid,
+                                  'profilId': widget.appUser.userType == "Elève"
+                                      ? widget.appUser.id
+                                      : selectedProfile!.id,
                                   'subject': subject,
-                                  'studentFullName': selectedProfile!.isGroup
-                                      ? selectedProfile!.groupName
+                                  'studentFullName': widget.appUser.userType ==
+                                          "Elève"
+                                      ? "${widget.appUser.firstName} ${widget.appUser.lastName}"
                                       : '${selectedProfile!.firstName} ${selectedProfile!.lastName}',
-                                  'studentID': selectedProfile!.id,
+                                  'studentID':
+                                      widget.appUser.userType == "Elève"
+                                          ? widget.appUser.id
+                                          : selectedProfile!.id,
                                   'state': "Demande",
                                   'weekDuration': weekDuration,
                                   'hoursPerWeek': hoursPerWeek,
                                 });
+                                CoursesNotificationService()
+                                    .envoyerNotification(CoursesNotification(
+                                  type: 0,
+                                  id: '',
+                                        nom: widget.appUser.userType == "Elève"
+                                            ? widget.appUser.firstName
+                                            : selectedProfile!.firstName,
+                                        prenom:
+                                            widget.appUser.userType == "Elève"
+                                                ? " ${widget.appUser.lastName}"
+                                                : selectedProfile!.lastName,
+                                        adresse:
+                                            widget.appUser.userType == "Elève"
+                                                ? widget.appUser.address
+                                                : selectedProfile!.adresse,
+                                        classe:
+                                            widget.appUser.userType == "Elève"
+                                                ? '${widget.appUser.studentClass}'
+                                                : selectedProfile!.studentClass,
+                                        matiere: subject,
+                                        nombreHeuresParSemaine:
+                                            '$hoursPerWeek',
+                                        emploiDuTemps: weekDuration,
+                                        eleveId: widget.appUser.id,
+                                        compteId: 'rY33iKsQgGew8akQ4ILyULwrYSt2',//'rY33iKsQgGew8akQ4ILyULwrYSt2',
+                                        dateEnvoi: DateTime.now()));
                                 Navigator.of(context).pop();
+                                Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) =>
+                                      AppUI(appUser: widget.appUser, index: 0),
+                                ));
                               } else {
-                                showMessage(context, "Veillez choisir un profil ou créez en un");
+                                showMessage(context,
+                                    "Veillez choisir un profil ou créez en un");
                               }
                             }
                           },
@@ -582,4 +674,3 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
     );
   }
 }
-

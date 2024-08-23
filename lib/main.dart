@@ -17,7 +17,25 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  //FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+  // Demander la permission de recevoir des notifications
+  NotificationSettings settings = await messaging.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+
+  // Gérer les messages en arrière-plan
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  // Gérer les messages en premier plan
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print('Message reçu en premier plan : ${message.messageId}');
+    // Afficher la notification ici
+  });
+
 
   runApp(const MyApp());
 }

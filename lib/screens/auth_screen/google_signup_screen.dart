@@ -25,6 +25,7 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
   final TextEditingController nomController = TextEditingController();
   final TextEditingController prenomController = TextEditingController();
   final TextEditingController adresseController = TextEditingController();
+  final TextEditingController studentClassController = TextEditingController();
 
 
   @override
@@ -288,6 +289,50 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
                                   },
                                 ),
                               ),
+                            if(_selectedUserType == usersType[0])
+                              const SizedBox(
+                                height: 25,
+                              ),
+                            if(_selectedUserType == usersType[0])
+                              TextFormField(
+                                controller: studentClassController,
+                                validator: (value) {
+                                  if (_selectedUserType == usersType[0] && (value == null || value.isEmpty)) {
+                                    return 'Entrez votre classe';
+                                  }
+                                  return null;
+                                },
+                                decoration: InputDecoration(
+                                  label: const Text('Classe'),
+                                  hintText: 'Entrer votre classe',
+                                  hintStyle: const TextStyle(
+                                    color: Colors.black26,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                      color:
+                                      Colors.black12, // Default border color
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                      color:
+                                      Colors.black12, // Default border color
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              ),
+
+
+
+
+
+
+
+
+
                           ],
                         ),
                       ),
@@ -343,7 +388,9 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
                                   prenomController.text,
                                   adresseController.text,
                                   _selectedUserType!,
-                                  subject: subject);
+                                  subject: subject,
+                                studentClass: studentClassController.text,
+                              );
                               _appUser != null ? Navigator.of(context).push(
                                   MaterialPageRoute(builder: (context) =>
                                       AppUI(appUser: _appUser!),)): showMessage(context, "Une erreur s'est produite.\nVeillez reessayer");

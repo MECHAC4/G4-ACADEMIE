@@ -8,21 +8,41 @@ class ProfilServices {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     CollectionReference users = firestore.collection('users');
 
-    await users
+    bool isMainProfileExist = await profilExist(userId);
+
+    isMainProfileExist? await users
         .doc(userId)
         .collection('profil')
         .add({
-          'isGroup': profil["isGroup"],
+          //'isGroup': profil["isGroup"],
           'firstName': profil["firstName"],
           'lastName': profil["lastName"],
-          'groupName': profil["groupName"],
+          //'groupName': profil["groupName"],
           'studentClass': profil["studentClass"],
-          'studentCount': profil["studentCount"],
+          //'studentCount': profil["studentCount"],
           'adresse': profil["adresse"],
         })
         .then((value) => print("Profil ajouté"))
+        .catchError((error) => print("Erreur: $error")):users.doc(userId).collection('profil').doc(userId).set(
+        {
+          //'isGroup': profil["isGroup"],
+          'firstName': profil["firstName"],
+          'lastName': profil["lastName"],
+          //'groupName': profil["groupName"],
+          'studentClass': profil["studentClass"],
+          //'studentCount': profil["studentCount"],
+          'adresse': profil["adresse"],
+        }
+    ).then((value) => print("Profil ajouté"))
         .catchError((error) => print("Erreur: $error"));
   }
+
+
+  Future<bool> profilExist(String uid)async{
+    final data = await FirebaseFirestore.instance.collection('users').doc(uid).collection('profil').doc(uid).get();
+    return data.exists;
+  }
+
 
   Future<List<ProfilClass>> fetchProfiles(String userId) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -34,12 +54,12 @@ class ProfilServices {
           final value = doc.data() as Map<String, dynamic>;
           return ProfilClass.fromMap({
             "id": doc.id,
-            "isGroup": value["isGroup"],
-            "firstName": value["isGroup"] ? null : value["firstName"],
-            "lastName": value["isGroup"] ? null : value["lastName"],
-            "groupName": value["isGroup"] ? value["groupName"] : null,
-            "studentClass": value["studentClass"],
-            "studentCount": value["isGroup"] ? value["studentCount"] : null,
+            //"isGroup": value["isGroup"],
+            "firstName":  value["firstName"]??'',
+            "lastName":  value["lastName"]??'',
+            //"groupName": value["isGroup"] ? value["groupName"] : null,
+            "studentClass": value["studentClass"]??'',
+           // "studentCount": value["isGroup"] ? value["studentCount"] : null,
             "adresse": value["adresse"],
           });
         })
@@ -62,19 +82,16 @@ class ProfilServices {
       final data = docSnapshot.data() as Map<String, dynamic>;
       return ProfilClass.fromMap({
         "id": docSnapshot.id,
-        "isGroup": data["isGroup"],
-        "firstName": data["isGroup"] ? null : data["firstName"],
-        "lastName": data["isGroup"] ? null : data["lastName"],
-        "groupName": data["isGroup"] ? data["groupName"] : null,
+        //"isGroup": data["isGroup"],
+        "firstName":  data["firstName"],
+        "lastName":  data["lastName"],
+        //"groupName": data["isGroup"] ? data["groupName"] : null,
         "studentClass": data["studentClass"],
-        "studentCount": data["isGroup"] ? data["studentCount"] : null,
+        //"studentCount": data["isGroup"] ? data["studentCount"] : null,
         "adresse": data["adresse"],
       });
     } else {
       return null;
     }
   }
-
-
-
 }

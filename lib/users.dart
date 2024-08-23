@@ -6,7 +6,8 @@ class AppUser {
   String userType; // "Teacher", "Student", "Parent"
   String emailOrPhone;
   String password;
-  List<String>? subject; // Only for teachers
+  List<String>? subject;
+  String? studentClass;// Only for teachers
 
   AppUser({
     required this.id,
@@ -17,6 +18,7 @@ class AppUser {
     required this.emailOrPhone,
     required this.password,
     this.subject,
+    this.studentClass,
   });
 
   Map<String, dynamic> toMap() {
@@ -29,6 +31,7 @@ class AppUser {
       'emailOrPhone': emailOrPhone,
       'password': password,
       'subject': subject,
+      'studentClass': studentClass??''
     };
   }
 
@@ -38,10 +41,12 @@ class AppUser {
       firstName: map['firstName'],
       lastName: map['lastName'],
       address: map['address'],
-      userType: map['userType'],
-      emailOrPhone: map['emailOrPhone'],
+      userType: map['userType']??'admin',
+      emailOrPhone: map['emailOrPhone']??'',
       password: map['password'],
+      studentClass: map['studentClass']??'',
       subject: map['subject'] != null ? List<String>.from(map['subject']) : null,
     );
   }
 }
+
