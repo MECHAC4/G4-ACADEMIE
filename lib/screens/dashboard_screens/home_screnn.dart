@@ -1,9 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:g4_academie/screens/dashboard_screens/builder/add_cours_builder.dart';
 import 'package:g4_academie/screens/dashboard_screens/builder/cours_builder.dart';
 import 'package:g4_academie/screens/dashboard_screens/builder/notification_icon_builder.dart';
 import 'package:g4_academie/screens/dashboard_screens/builder/week_program_builder.dart';
 import 'package:g4_academie/screens/notification/courses_notification_screen.dart';
+import 'package:g4_academie/screens/verification/verification.dart';
 import 'package:g4_academie/services/profil_services.dart';
 import 'package:g4_academie/theme/theme.dart';
 import 'package:g4_academie/widgets/custom_scaffold.dart';
@@ -32,6 +34,21 @@ class _DashboardPageState extends State<DashboardPage>
   void dispose() {
     _tabController.dispose();
     super.dispose();
+    verification();
+  }
+
+  Future<bool> isProfilVerified() async {
+    DocumentSnapshot doc = await FirebaseFirestore.instance
+        .collection('verification')
+        .doc(widget.appUser.id)
+        .get();
+    return doc.exists;
+  }
+
+  bool isVerified = true;
+
+  void verification() async {
+    isVerified = await isProfilVerified();//setState(() {});
   }
 
   @override
@@ -77,28 +94,35 @@ class _DashboardPageState extends State<DashboardPage>
         length: 2,
         child: Column(
           children: [
-
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 TextButton(
                     onPressed: () {},
                     child: Text(
-                      ((selectedProfile == null) || (selectedProfile?.firstName == _appUser.firstName &&
-                          selectedProfile?.lastName == _appUser.lastName &&
-                          selectedProfile?.adresse == _appUser.address &&
-                          selectedProfile?.studentClass ==
-                              _appUser.studentClass))
+                      ((selectedProfile == null) ||
+                              (selectedProfile?.firstName ==
+                                      _appUser.firstName &&
+                                  selectedProfile?.lastName ==
+                                      _appUser.lastName &&
+                                  selectedProfile?.adresse ==
+                                      _appUser.address &&
+                                  selectedProfile?.studentClass ==
+                                      _appUser.studentClass))
                           ? 'Profil principal' /*'${_appUser.firstName.toUpperCase()} ${_appUser.lastName.toUpperCase()}'*/
                           : '${selectedProfile?.firstName} ${selectedProfile?.lastName}',
                       style: TextStyle(
                         color: lightColorScheme.surface,
                       ),
                     )),
-                _appUser.userType == "Elève"||  _appUser.userType == "Enseignant"
+                _appUser.userType == "Elève" ||
+                        _appUser.userType == "Enseignant"
                     ? TextButton(
                         onPressed: () {
-                          Navigator.of(context).push(MaterialPageRoute(builder: (context) => AppUI(appUser: widget.appUser,index : 3),));
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) =>
+                                AppUI(appUser: widget.appUser, index: 3),
+                          ));
                         },
                         child: Row(
                           children: [
@@ -160,30 +184,74 @@ class _DashboardPageState extends State<DashboardPage>
               children: [
                 TextButton(
                     onPressed: () {
-                      if(_appUser.userType != "Enseignant") {
+                      verification();
+                      if (_appUser.userType != "Enseignant") {
+                        setState(() {
+                        });
+                        if (isVerified) {
+                          Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => AddCourseDialog(
+                              profiles: profiles,
+                              appUser: _appUser,
+                              //userId: _appUser.id,
+                            ),
+                          ));
+                        } else {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                content: const Text(
+                                  "Vous devez vérifier votre profil d'abord avant de demander un cours",
+                                  textAlign: TextAlign.center,
+                                ),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                        Navigator.of(context)
+                                            .push(MaterialPageRoute(
+                                          builder: (context) =>
+                                              VerificationStepPage(
+                                            user: widget.appUser,
+                                          ),
+                                        ));
+                                      },
+                                      child: const Text("Vérifier mon profil"))
+                                ],
+                              );
+                            },
+                          );
+                        }
+                      } else {
                         Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => AddCourseDialog(
-                          profiles: profiles,
-                          appUser: _appUser,
-                          //userId: _appUser.id,
-                        ),
-                      ));
-                      }else{
-                        Navigator.of(context).push(MaterialPageRoute(builder: (context) =>  NotificationsPage(appUser: widget.appUser,admin: widget.admin,),));
+                          builder: (context) => NotificationsPage(
+                            appUser: widget.appUser,
+                            admin: widget.admin,
+                          ),
+                        ));
                       }
                     },
                     child: Text(
-                      _appUser.userType != "Enseignant"?
-                      "Ajouter un cours": "Notifications",
+                      _appUser.userType != "Enseignant"
+                          ? "Ajouter un cours"
+                          : "Notifications",
                       style: TextStyle(
                           color: lightColorScheme.surface,
                           fontSize: height / 45),
                     )),
                 IconButton(
                     onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(builder: (context) =>  NotificationsPage(appUser: widget.appUser,admin: widget.admin,),));
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => NotificationsPage(
+                          appUser: widget.appUser,
+                          admin: widget.admin,
+                        ),
+                      ));
                     },
-                    icon: NotificationsIcon(userId: _appUser.id,))
+                    icon: NotificationsIcon(
+                      userId: _appUser.id,
+                    ))
               ],
             ),
             Padding(padding: EdgeInsets.only(top: width / 50)),
@@ -220,10 +288,11 @@ class _DashboardPageState extends State<DashboardPage>
                 ),
                 child: TabBarView(controller: _tabController, children: [
                   CoursBuilder(
+                    appUser: widget.appUser,
                     userId: _appUser.id,
                     selectedProfile: selectedProfile,
                   ),
-                  const WeekProgramBuilder(),
+                   WeekProgramBuilder(profil: selectedProfile, appUser: widget.appUser,),
                 ]),
               ),
             ),

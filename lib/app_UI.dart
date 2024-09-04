@@ -4,6 +4,7 @@ import 'package:g4_academie/screens/chat/chat_screen.dart';
 import 'package:g4_academie/screens/dashboard_screens/home_screnn.dart';
 import 'package:g4_academie/screens/demandes/demande.dart';
 import 'package:g4_academie/screens/payment/payment.dart';
+import 'package:g4_academie/screens/payment/payment_manager_screen.dart';
 import 'package:g4_academie/screens/profil/profil.dart';
 
 import 'package:g4_academie/services/message_service/chat_params.dart';
@@ -60,7 +61,8 @@ class _AppUIState extends State<AppUI> {
         ChatScreen(
           chatParams: ChatParams(widget.appUser.id, admin),
         ),
-        const PaymentScreen(),
+        const PaymentManagerScreen(),
+        //const PaymentScreen(),
         DemandePage(appUser: widget.appUser,admin: admin),
       ][_currentIndex],
         Padding(

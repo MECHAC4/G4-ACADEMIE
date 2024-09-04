@@ -11,7 +11,7 @@ class NotificationsIcon extends StatelessWidget {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('notifications')
-          .where('compteId', isEqualTo: userId)
+          .where('idTo', isEqualTo: userId)
           .where('estVue', isEqualTo: false)
           .snapshots(),
       builder: (context, snapshot) {

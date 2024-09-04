@@ -79,6 +79,8 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
       itemCount: notifications.length,
       itemBuilder: (context, index) {
         CoursesNotification notification = notifications[index];
+        print("**********************${notification.toMap()}");
+
         switch(notification.type){
           case 1:
             return notificationType1Builder(notification);
@@ -86,6 +88,10 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
             return notificationType3Builder(notification);
           case 4 :
             return notificationType4Builder(notification);
+          case 33 :
+            return notificationType33Builder(notification);
+          case 11 :
+            return notificationType11Builder(notification);
         }
         return null;
 
@@ -117,13 +123,52 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
     return Card(
       elevation: 10,
       child: ListTile(
-        title: Text("Votre candidature pour le cours de maison en ${notification.matiere} à ${notification.adresse} est rejeté/Accepté"),
+        title: Text("Votre candidature pour le cours de maison en ${notification.matiere} à ${notification.adresse} est acceptée"),
         subtitle: Text("Envoyé le: ${DateFormat('dd MMM kk:mm').format(notification.dateEnvoi)}"),
+        trailing: const Icon(Icons.check_box, color: Colors.green,),
         onTap: () {
           _notificationService.marquerCommeVue(notification.id);
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => NotificationDetailsPage(type: 3,notification: notification, user : widget.appUser, admin: widget.admin,)),
+          );
+        },
+      ),
+    );
+  }
+
+
+  Widget notificationType33Builder(CoursesNotification notification){
+    return Card(
+      elevation: 10,
+      child: ListTile(
+        title: Text("Votre candidature pour le cours de maison en ${notification.matiere} à ${notification.adresse} est rejetée"),
+        subtitle: Text("Envoyé le: ${DateFormat('dd MMM kk:mm').format(notification.dateEnvoi)}"),
+        trailing: const Icon(Icons.close, color: Colors.red,),
+        onTap: () {
+          _notificationService.marquerCommeVue(notification.id);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => NotificationDetailsPage(type: 33,notification: notification, user : widget.appUser, admin: widget.admin,)),
+          );
+        },
+      ),
+    );
+  }
+
+
+  Widget notificationType11Builder(CoursesNotification notification){
+    return Card(
+      elevation: 10,
+      child: ListTile(
+        title: Text("Votre demande de cours de maison en ${notification.matiere} est rejetée"),
+        subtitle: Text("Envoyé le: ${DateFormat('dd MMM kk:mm').format(notification.dateEnvoi)}"),
+        trailing: const Icon(Icons.close, color: Colors.red,),
+        onTap: () {
+          _notificationService.marquerCommeVue(notification.id);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => NotificationDetailsPage(type: 33,notification: notification, user : widget.appUser, admin: widget.admin,)),
           );
         },
       ),

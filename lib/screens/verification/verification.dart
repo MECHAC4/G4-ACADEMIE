@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../services/verification.dart';
 import '../../users.dart';
 
 
@@ -61,16 +62,16 @@ class _VerificationStepPageState extends State<VerificationStepPage> {
   // Function to save verification data
   Future<void> _submitVerification(AppUser user) async {
     if (_profileImage != null && _idImage != null &&
-        (user.userType == 'teacher' ? _diplomaImage != null : true)) {
+        (user.userType == 'Enseignant' ? _diplomaImage != null : true)) {
       String profileUrl = await _uploadImage(_profileImage!, 'profile');
       String idUrl = await _uploadImage(_idImage!, 'id');
-      String diplomaUrl = user.userType == 'teacher' ?
+      String diplomaUrl = user.userType == 'Enseignant' ?
       await _uploadImage(_diplomaImage!, 'diploma') : '';
 
       await _firestore.collection('verification').doc(user.id).set({
         'profileImage': profileUrl,
         'idImage': idUrl,
-        'diplomaImage': user.userType == 'teacher' ? diplomaUrl : '',
+        'diplomaImage': user.userType == 'Enseignant' ? diplomaUrl : '',
         'status': 'En cours de vérification',
       });
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -126,7 +127,7 @@ class _VerificationStepPageState extends State<VerificationStepPage> {
     ];
 
     // Add diploma step only if the user is a teacher
-    if (widget.user?.userType == 'teacher') {
+    if (widget.user?.userType == 'Enseignant') {
       steps.add(
         Step(
           title: const Text("Diplôme"),
@@ -152,14 +153,18 @@ class _VerificationStepPageState extends State<VerificationStepPage> {
       ),
       body: Stepper(
         currentStep: currentStep,
-        onStepContinue: () {
+        onStepContinue: () async {
           if (currentStep < steps.length - 1) {
             setState(() {
               currentStep++;
             });
           } else {
-            _submitVerification(widget.user!);
+            await _submitVerification(widget.user!).then((value) {
+              return showMessage(context, "Enregistrement...");
+            },);
             Navigator.of(context).pop();
+            setState(() {
+            });
           }
         },
         onStepCancel: () {

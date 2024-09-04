@@ -14,7 +14,7 @@ class CoursesNotificationService {
   // Récupérer les notifications pour un utilisateur spécifique
   Future<List<CoursesNotification>> getNotificationsForUser(String userId) async {
     QuerySnapshot querySnapshot = await notificationsCollection
-        .where('compteId', isEqualTo: userId).orderBy('dateEnvoi', descending: true)
+        .where('idTo', isEqualTo: userId).orderBy('dateEnvoi', descending: true)
         .get();
 
     return querySnapshot.docs
@@ -25,7 +25,7 @@ class CoursesNotificationService {
 
   Future<List<CoursesNotification>> getAskForUser(String userId) async {
     QuerySnapshot querySnapshot = await notificationsCollection
-        .where('eleveId', isEqualTo: userId).orderBy('dateEnvoi', descending: true)
+        .where('idFrom', isEqualTo: userId).orderBy('dateEnvoi', descending: true)
         .get();
 
     return querySnapshot.docs

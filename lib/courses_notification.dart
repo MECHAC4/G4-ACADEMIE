@@ -7,13 +7,15 @@ class CoursesNotification {
   final String matiere; // Une seule matière
   final String nombreHeuresParSemaine;
   final List<Map<String, dynamic>> emploiDuTemps; // Liste pour l'emploi du temps
-  final String eleveId;
-  final String compteId;
+  final String idTo;
+  final String idFrom;
   bool estVue; // Spécifie si la notification a été vue ou pas
   final DateTime dateEnvoi;
   final int? type;
+  final String coursePath;
 
   CoursesNotification({
+    required this.coursePath,
     required this.type,
     required this.id,
     required this.nom,
@@ -23,8 +25,8 @@ class CoursesNotification {
     required this.matiere,
     required this.nombreHeuresParSemaine,
     required this.emploiDuTemps,
-    required this.eleveId,
-    required this.compteId,
+    required this.idTo,
+    required this.idFrom,
     this.estVue = false,
     required this.dateEnvoi,
   });
@@ -32,6 +34,7 @@ class CoursesNotification {
   // Méthode pour convertir en Map pour Firebase
   Map<String, dynamic> toMap() {
     return {
+      'coursePath': coursePath,
       'type': type,
       'id': id,
       'nom': nom,
@@ -41,8 +44,8 @@ class CoursesNotification {
       'matiere': matiere,
       'nombreHeuresParSemaine': nombreHeuresParSemaine,
       'emploiDuTemps': emploiDuTemps,
-      'eleveId': eleveId,
-      'compteId': compteId,
+      'idTo': idTo,
+      'idFrom': idFrom,
       'estVue': estVue,
       'dateEnvoi': dateEnvoi.toIso8601String(),
     };
@@ -51,6 +54,7 @@ class CoursesNotification {
   // Méthode pour créer une instance depuis un Map
   factory CoursesNotification.fromMap(Map<String, dynamic> map, String id) {
     return CoursesNotification(
+      coursePath: map['coursePath'],
       type: map['type'],
       id: id,
       nom: map['nom'],
@@ -60,8 +64,8 @@ class CoursesNotification {
       matiere: map['matiere'],
       nombreHeuresParSemaine: map['nombreHeuresParSemaine'],
       emploiDuTemps: List<Map<String, dynamic>>.from(map['emploiDuTemps']),
-      eleveId: map['eleveId'],
-      compteId: map['compteId'],
+      idFrom: map['idFrom'],
+      idTo: map['idTo'],
       estVue: map['estVue'],
       dateEnvoi: DateTime.parse(map['dateEnvoi']),
     );

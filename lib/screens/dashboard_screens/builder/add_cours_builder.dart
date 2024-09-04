@@ -517,14 +517,17 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                             ElevatedButton(
                               onPressed: () {
                                 setState(() {
-                                  weekDuration.add({
-                                    'day': _dayControllers[index].text,
-                                    'startTime':
-                                        '${_startHourControllers[index].text}:${_startMinuteControllers[index].text}',
-                                    'endTime':
-                                        '${_endHourControllers[index].text}:${_endMinuteControllers[index].text}',
-                                  });
-                                  _clearFields();
+
+                                  if(_dayControllers[index].text.isNotEmpty && _startHourControllers[index].text.isNotEmpty && _endHourControllers[index].text.isNotEmpty && _endMinuteControllers[index].text.isNotEmpty){
+                                    weekDuration.add({
+                                      'day': _dayControllers[index].text,
+                                      'startTime':
+                                      '${_startHourControllers[index].text}:${_startMinuteControllers[index].text}',
+                                      'endTime':
+                                      '${_endHourControllers[index].text}:${_endMinuteControllers[index].text}',
+                                    });
+                                    _clearFields();
+                                  }
                                 });
                               },
                               child: const Text("Ajouter au programme"),
@@ -592,7 +595,7 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                           child: const Text("Annuler"),
                         ),
                         ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
                             if (_formKey.currentState!.validate()) {
                               _formKey.currentState!.save();
 
@@ -601,8 +604,13 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                                           "Parent d'élève" &&
                                       selectedProfile != null) ||
                                   (widget.appUser.userType == "Elève")) {
+                                if(hoursPerWeek == null){
+                                  setState(() {
+                                    hoursPerWeek = '${calculateTotalHours(weekDuration)}';
+                                  });
+                                }
                                 // Stocker les informations dans Firestore
-                                CoursServices().saveCoursToFirestore({
+                                String courseId = await CoursServices().saveCoursToFirestore({
                                   'adresse': widget.appUser.userType == "Elève"
                                       ? widget.appUser.address
                                       : selectedProfile!.adresse,
@@ -619,7 +627,7 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                                       widget.appUser.userType == "Elève"
                                           ? widget.appUser.id
                                           : selectedProfile!.id,
-                                  'state': "Demande",
+                                  'state': "En cours de traitement",
                                   'weekDuration': weekDuration,
                                   'hoursPerWeek': hoursPerWeek,
                                 });
@@ -627,6 +635,8 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                                     .envoyerNotification(CoursesNotification(
                                   type: 0,
                                   id: '',
+                                        coursePath: widget.appUser.userType == "Elève"
+                                            ?'${widget.appUser.id}/${widget.appUser.id}/$courseId':'${widget.appUser.id}/${selectedProfile!.id}/$courseId',
                                         nom: widget.appUser.userType == "Elève"
                                             ? widget.appUser.firstName
                                             : selectedProfile!.firstName,
@@ -646,8 +656,8 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                                         nombreHeuresParSemaine:
                                             '$hoursPerWeek',
                                         emploiDuTemps: weekDuration,
-                                        eleveId: widget.appUser.id,
-                                        compteId: 'rY33iKsQgGew8akQ4ILyULwrYSt2',//'rY33iKsQgGew8akQ4ILyULwrYSt2',
+                                        idFrom: widget.appUser.id,
+                                        idTo: 'rY33iKsQgGew8akQ4ILyULwrYSt2',//'rY33iKsQgGew8akQ4ILyULwrYSt2',
                                         dateEnvoi: DateTime.now()));
                                 Navigator.of(context).pop();
                                 Navigator.of(context).push(MaterialPageRoute(
@@ -672,5 +682,39 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
         ),
       ),
     );
+  }
+
+
+  int calculateTotalHours(List<Map<String, String>> weekDuration) {
+    int totalMinutes = 0;
+
+    for (var schedule in weekDuration) {
+      // Récupération de l'heure de début et de fin
+      String startTime = schedule['startTime']!;
+      String endTime = schedule['endTime']!;
+
+      // Conversion des heures et minutes en valeurs entières
+      int startHour = int.parse(startTime.split(':')[0]);
+      int startMinute = int.parse(startTime.split(':')[1]);
+
+      int endHour = int.parse(endTime.split(':')[0]);
+      int endMinute = int.parse(endTime.split(':')[1]);
+
+      // Calcul du nombre de minutes écoulées entre l'heure de début et de fin
+      int startTotalMinutes = (startHour * 60) + startMinute;
+      int endTotalMinutes = (endHour * 60) + endMinute;
+
+      // Si l'heure de fin est avant l'heure de début (programme sur deux jours), ajuster la différence
+      if (endTotalMinutes < startTotalMinutes) {
+        endTotalMinutes += 24 * 60; // Ajouter 24 heures en minutes
+      }
+
+      // Additionner la différence au total
+      totalMinutes += (endTotalMinutes - startTotalMinutes);
+    }
+
+    // Conversion des minutes totales en heures
+    int totalHours = totalMinutes ~/ 60;
+    return totalHours;
   }
 }

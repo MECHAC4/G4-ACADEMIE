@@ -35,7 +35,73 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     _appUser = widget.appUser;
     verification();
+    _load();
   }
+
+  void _load() async{
+    verificationData = await getVerificationData();
+  }
+
+  Future<Map<String, dynamic>?> getVerificationData() async {
+    final doc = await FirebaseFirestore.instance
+        .collection('verification')
+        .doc(widget.appUser.id)
+        .get();
+
+    if (doc.exists) {
+      return doc.data();
+    }
+    return null;
+  }
+
+   Map<String, dynamic>? verificationData = {};
+
+
+  Widget _buildProfileImage(BuildContext context,String? imageUrl) {
+    _load();
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Container(
+          //height: 180,
+          width: double.infinity,
+          //color: Colors.blueAccent,
+        ),
+        GestureDetector(
+          onTap: () {
+            if(imageUrl!=null){
+              Navigator.of(context).push(MaterialPageRoute(builder: (context) => UserProfilePage(user: widget.appUser),));
+            }
+          },
+          child: ListTile(
+            leading: CircleAvatar(
+              //radius: 60,
+              radius: MediaQuery.of(context).size.width / 10,
+              backgroundColor: lightColorScheme.primary,
+              backgroundImage: imageUrl != null ? NetworkImage(imageUrl) : null,
+             // backgroundColor: Colors.white,
+              child: imageUrl == null
+                  ? const Icon(Icons.person, color: Colors.blue, size: 50)
+                  : null,
+            ),
+            title: Row(
+              children: [
+                Flexible(
+                  child: Text(
+                    '${_appUser.firstName.toUpperCase()} ${_appUser.lastName.toUpperCase()}',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Flexible(child: statut(context)),
+              ],
+            ),
+          )
+        ),
+      ],
+    );
+  }
+
+
 
   Future<String> checkStatut()async{
     DocumentSnapshot doc = await FirebaseFirestore.instance
@@ -48,7 +114,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void verification()async{
     isVerified = await isProfilVerified();
-
   }
 
   String state = '';
@@ -71,7 +136,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return  Row(
           children: [
             Flexible(child: Text("($state)", style: const TextStyle(color: Colors.orange),)),
-            if(state == 'verified')
+            if(state == 'Vérifié')
             const Flexible(child: Icon(Icons.verified, color: Colors.blue,))
           ],
         );
@@ -88,25 +153,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding:
             EdgeInsets.symmetric(horizontal: width / 22, vertical: width / 18),
         children: [
-          ListTile(
-            contentPadding: const EdgeInsets.only(left: 0),
-            leading: CircleAvatar(
-              radius: width / 10,
-              backgroundColor: lightColorScheme.primary,
-              child: const Icon(Icons.person, color: Colors.white, size: 50),
-            ),
-            title: Row(
-              children: [
-                Flexible(
-                  child: Text(
-                    '${_appUser.firstName.toUpperCase()} ${_appUser.lastName.toUpperCase()}',
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Flexible(child: statut(context)),
-              ],
-            ),
-          ),
+          _buildProfileImage(context, verificationData?['profileImage']),
           const SizedBox(height: 20),
           buildMenuItem(context, 'Information de profil'),
           buildMenuItem(context, 'Notification'),

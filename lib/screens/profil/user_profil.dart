@@ -84,6 +84,26 @@ class UserProfilePage extends StatelessWidget {
 
           // Statut de vérification
           _buildVerificationStatus(verificationData['status']),
+          if(verificationData['status'] == 'Non vérifié')
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => VerificationStepPage(
+                  user: user,
+                ),
+              )); // Redirection vers la page de vérification
+            },
+            icon: const Icon(Icons.verified_user),
+            label: const Text('Vérifier le profil'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blueAccent,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+          const Text('\n'),
         ],
       ),
     );
@@ -181,7 +201,7 @@ class UserProfilePage extends StatelessWidget {
                 child: Text(
                   '    ${user.firstName} ${user.lastName}',
                   style: const TextStyle(
-                    fontSize: 26,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -191,11 +211,11 @@ class UserProfilePage extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             children: [
-              const Icon(Icons.location_on, color: Colors.green, size: 35,),
+              const Icon(Icons.location_on, color: Colors.green, size: 20,),
               Flexible(
                 child: Text('    ${user.address}',
                   style: const TextStyle(
-                    fontSize: 26,
+                    fontSize: 15,
                   ),
                 ),
               ),
@@ -204,11 +224,11 @@ class UserProfilePage extends StatelessWidget {
           const SizedBox(height: 8),
           Row(
             children: [
-              const Icon(Icons.quiz, size: 35, color: Colors.brown,),
+              const Icon(Icons.quiz, size: 20, color: Colors.brown,),
               Flexible(
                 child: Text(
                   '    ${user.userType}',
-                  style: const TextStyle(fontSize: 26),
+                  style: const TextStyle(fontSize: 15),
                 ),
               ),
             ],
@@ -216,11 +236,11 @@ class UserProfilePage extends StatelessWidget {
           if (user.userType == 'Enseignant' && user.subject != null)
             Row(
               children: [
-                const Icon(Icons.subject, color: Colors.pinkAccent,size: 35,),
+                const Icon(Icons.subject, color: Colors.pinkAccent,size: 20,),
                 Flexible(
                   child: Text(
                     '    ${user.subject!.join(", ")}',
-                    style: const TextStyle(fontSize: 26),
+                    style: const TextStyle(fontSize: 15),
                   ),
                 ),
               ],
@@ -228,11 +248,11 @@ class UserProfilePage extends StatelessWidget {
           if (user.userType == 'Elève')
             Row(
               children: [
-                const Icon(Icons.class_sharp, color: Colors.cyan,size: 35,),
+                const Icon(Icons.class_sharp, color: Colors.cyan,size: 20,),
                 Flexible(
                   child: Text(
                     '    ${user.studentClass ?? "Non spécifiée"}',
-                    style: const TextStyle(fontSize: 26),
+                    style: const TextStyle(fontSize: 15),
                   ),
                 ),
               ],
