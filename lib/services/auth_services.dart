@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:g4_academie/services/push_notification_service/push_not.dart';
 import 'package:g4_academie/services/verification.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/material.dart';
@@ -10,11 +11,11 @@ import '../users.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   //final EncryptionService _encryptionService = EncryptionService();
 
   // Enregistrement par email
-  Future<AppUser?> registerWithEmail(
-      BuildContext context,
+  Future<AppUser?> registerWithEmail(BuildContext context,
       String email,
       String password,
       String firstName,
@@ -27,7 +28,8 @@ class AuthService {
     try {
       debugPrint("************************sign in...*************************");
 
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      UserCredential userCredential = await _auth
+          .createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -44,7 +46,12 @@ class AuthService {
         'password': password,
         'subject': subject,
         'studentClass': studentClass,
+        'signinDate': DateTime.now(),
       });
+
+      if(userCredential.user != null) {
+        initUser(userCredential.user!.uid);
+      }
 
       return AppUser(
         id: userCredential.user?.uid ?? '',
@@ -57,13 +64,14 @@ class AuthService {
         subject: subject,
         studentClass: studentClass,
       );
-
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
-        showMessage(context, "Mot de passe trop faible.\nCombinez des chiffres, des majuscules et des caractères spéciaux");
+        showMessage(context,
+            "Mot de passe trop faible.\nCombinez des chiffres, des majuscules et des caractères spéciaux");
         return null;
       } else if (e.code == 'email-already-in-use') {
-        showMessage(context, "Vous avez déjà un compte avec cet email.\nConnectez-vous !");
+        showMessage(context,
+            "Vous avez déjà un compte avec cet email.\nConnectez-vous !");
         return null;
       }
       showMessage(context, "Une erreur s'est produite : ${e.toString()}");
@@ -76,28 +84,35 @@ class AuthService {
   }
 
 
-  Future<String?> verifyPhoneNumber(BuildContext context,String phone)async{
-
+  Future<String?> verifyPhoneNumber(BuildContext context, String phone) async {
     await _auth.verifyPhoneNumber(
       phoneNumber: phone,
       verificationCompleted: (PhoneAuthCredential credential) async {
-         await _auth.signInWithCredential(credential);
+        await _auth.signInWithCredential(credential);
         showMessage(context, "Numéro de téléphone vérifié");
-        },
+      },
       verificationFailed: (FirebaseAuthException e) {
         showMessage(context, "Echec de la vérification");
       },
       codeSent: (String verificationId, int? resendToken) {
-        showMessage(context, "Un code de vérification est envoyé au $phone.\nIl sera expiré dans 60 secondes");
+        showMessage(context,
+            "Un code de vérification est envoyé au $phone.\nIl sera expiré dans 60 secondes");
         showDialog(context: context, builder: (context) {
-          final double width = MediaQuery.of(context).size.width;
-          final double height = MediaQuery.of(context).size.height;
+          final double width = MediaQuery
+              .of(context)
+              .size
+              .width;
+          final double height = MediaQuery
+              .of(context)
+              .size
+              .height;
           final TextEditingController smsCodeController = TextEditingController();
           return AlertDialog(
             backgroundColor: Colors.white,
-            contentPadding: EdgeInsets.symmetric(horizontal: width/10, vertical: height/15),
+            contentPadding: EdgeInsets.symmetric(
+                horizontal: width / 10, vertical: height / 15),
             content: SizedBox(
-              height: height/4,
+              height: height / 4,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -130,17 +145,24 @@ class AuthService {
                       ),
                     ),
                   ),
-                  TextButton(onPressed: (){
+                  TextButton(onPressed: () {
                     Navigator.of(context).pop();
                     verifyPhoneNumber(context, phone);
-                  }, child: const Text("Renvoyez le code", style: TextStyle(color: Colors.white))),
+                  },
+                      child: const Text(
+                          "Renvoyez le code", style: TextStyle(color: Colors
+                          .white))),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      ElevatedButton(onPressed: (){Navigator.of(context).pop();}, child: const Text("Annuler", style: TextStyle(color: Colors.white),)),
+                      ElevatedButton(onPressed: () {
+                        Navigator.of(context).pop();
+                      }, child: const Text(
+                        "Annuler", style: TextStyle(color: Colors.white),)),
                       ElevatedButton(
                         onPressed: () async {
-                          PhoneAuthCredential credential = PhoneAuthProvider.credential(
+                          PhoneAuthCredential credential = PhoneAuthProvider
+                              .credential(
                             verificationId: verificationId,
                             smsCode: smsCodeController.text,
                           );
@@ -151,10 +173,12 @@ class AuthService {
                               showMessage(context, "Vérification réussie");
                             }
                           } catch (e) {
-                            showMessage(context, "Échec de la vérification : code invalide");
+                            showMessage(context,
+                                "Échec de la vérification : code invalide");
                           }
                         },
-                        child: const Text("Vérifier", style: TextStyle(color: Colors.white),),
+                        child: const Text(
+                          "Vérifier", style: TextStyle(color: Colors.white),),
                       ),
                     ],
                   ),
@@ -164,25 +188,19 @@ class AuthService {
           );
         },);
       },
-      timeout : const Duration(seconds: 61),
-      codeAutoRetrievalTimeout: (String verificationId) {// Code de vérification automatique expiré
-      showMessage(context, "Le code de vérification est expiré.\nDemandez un nouveau");
-        },
+      timeout: const Duration(seconds: 61),
+      codeAutoRetrievalTimeout: (
+          String verificationId) { // Code de vérification automatique expiré
+        showMessage(context,
+            "Le code de vérification est expiré.\nDemandez un nouveau");
+      },
     );
     return _auth.currentUser?.uid;
   }
 
 
-
-
-
-
-
-
-
   // Enregistrement par numéro de téléphone
-  Future<AppUser?> registerWithPhone(
-      BuildContext context,
+  Future<AppUser?> registerWithPhone(BuildContext context,
       String uid,
       String phone,
       String password,
@@ -206,9 +224,15 @@ class AuthService {
         'password': password,
         'subject': subject,
         'studentClass': studentClass,
+        'signinDate': DateTime.now(),
+
       });
+
+        initUser(uid);
+
+
       return AppUser(
-        id : uid,
+        id: uid,
         firstName: firstName,
         lastName: lastName,
         address: address,
@@ -220,12 +244,13 @@ class AuthService {
       );
     } catch (e) {
       print(e.toString());
-      showMessage(context, "Erreur lors de l'enregistrement des données : ${e.toString()}");
+      showMessage(context,
+          "Erreur lors de l'enregistrement des données : ${e.toString()}");
     }
     return null;
   }
 
-  Future<bool> isGoogleUserExist(String uid)async{
+  Future<bool> isGoogleUserExist(String uid) async {
     final doc = await _firestore.collection('users').doc(uid).get();
     return doc.exists;
   }
@@ -234,7 +259,9 @@ class AuthService {
   Future<AppUser?> getUserById(String uid) async {
     try {
       // Récupération des données de l'utilisateur depuis Firestore
-      DocumentSnapshot userDoc = await _firestore.collection('users').doc(uid).get();
+      DocumentSnapshot userDoc = await _firestore.collection('users')
+          .doc(uid)
+          .get();
 
       if (userDoc.exists) {
         // Conversion des données en une instance de AppUser
@@ -251,74 +278,73 @@ class AuthService {
   }
 
 
-  Future<AppUser?> getAdmin()async{
-   QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('users')
+  Future<AppUser?> getAdmin() async {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection(
+        'users')
         .where('lastName', isEqualTo: 'admin')
         .where('firstName', isEqualTo: 'admin')
         .where('address', isEqualTo: 'admin')
         .get();
-   List<QueryDocumentSnapshot> adminDocs = querySnapshot.docs;
-   if(adminDocs.isEmpty || adminDocs.length>1){
-
-     return null;
-   }else{
-     final data = adminDocs[0].data() as Map<String, dynamic>;
-     return AppUser.fromMap(data, adminDocs[0].id);
-   }
-
+    List<QueryDocumentSnapshot> adminDocs = querySnapshot.docs;
+    if (adminDocs.isEmpty || adminDocs.length > 1) {
+      return null;
+    } else {
+      final data = adminDocs[0].data() as Map<String, dynamic>;
+      return AppUser.fromMap(data, adminDocs[0].id);
+    }
   }
-
-
-
-
-
-
 
 
   // Connexion par email
-  Future<AppUser?> signInWithEmail(
-      BuildContext context,
+  Future<AppUser?> signInWithEmail(BuildContext context,
       String email,
-      String password,
-      ) async {
-      try {
-        await _auth.signInWithEmailAndPassword(email: email, password: password);
-        return getUserById(_auth.currentUser!.uid);
-      } on FirebaseAuthException catch (e) {
-        if (e.code == 'user-not-found') {
-          debugPrint('Aucun utilisateur trouvé pour cet e-mail.');
-          showMessage(context,"Aucun utilisateur trouvé pour cet e-mail.\nInscrivez-vous.\n${e.toString()}");
-          return null;
-        } else if (e.code == 'wrong-password') {
-          debugPrint('Mot de passe erroné fourni pour cet utilisateur.');
-          showMessage(context,"Mot de passe incorrect : ${e.toString()}");
-          return null;
-        } else {
-          showMessage(context, "Une erreur s'est produite : ${e.toString()}");
-          debugPrint('Problème : *******************$e');
-          return null;
-        }
+      String password,) async {
+    try {
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      if(_auth.currentUser != null) {
+        initUser(_auth.currentUser!.uid);
       }
+      return getUserById(_auth.currentUser!.uid);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        debugPrint('Aucun utilisateur trouvé pour cet e-mail.');
+        showMessage(context,
+            "Aucun utilisateur trouvé pour cet e-mail.\nInscrivez-vous.\n${e
+                .toString()}");
+        return null;
+      } else if (e.code == 'wrong-password') {
+        debugPrint('Mot de passe erroné fourni pour cet utilisateur.');
+        showMessage(context, "Mot de passe incorrect : ${e.toString()}");
+        return null;
+      } else {
+        showMessage(context, "Une erreur s'est produite : ${e.toString()}");
+        debugPrint('Problème : *******************$e');
+        return null;
+      }
+    }
   }
 
   // Connexion par numéro de téléphone
-  Future<AppUser?> signInWithPhone(
-      BuildContext context,
+  Future<AppUser?> signInWithPhone(BuildContext context,
       String uid,
       String phone,
-      String password,
-      ) async {
+      String password,) async {
     try {
-      DocumentSnapshot doc = await _firestore.collection('users').doc(uid).get();
+      DocumentSnapshot doc = await _firestore.collection('users')
+          .doc(uid)
+          .get();
       showMessage(context, "doc.exists :${doc.exists} \nUID: $uid");
       if (doc.exists) {
-        AppUser? appUser = AppUser.fromMap(doc.data() as Map<String, dynamic>, uid);
+        AppUser? appUser = AppUser.fromMap(
+            doc.data() as Map<String, dynamic>, uid);
         showMessage(context, "AppUser :${appUser.toMap()} \nUID: $uid");
         // Décryptage du mot de passe stocké
         //String encryptedPassword = _encryptionService.encryptPassword(password);
         //showMessage(context, "isDecrypt : ${encryptedPassword == appUser.password}");
         // Vérification du mot de passe
         if (password == appUser.password) {
+            initUser(uid);
+
           return appUser;
         } else {
           showMessage(context, "Mot de passe incorrect");
@@ -335,13 +361,12 @@ class AuthService {
   }
 
 
-
-
   // Authentification par Google
   Future<String?> signInWithGoogle(BuildContext context) async {
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
+      final GoogleSignInAuthentication? googleAuth = await googleUser
+          ?.authentication;
 
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth?.accessToken,
@@ -349,6 +374,9 @@ class AuthService {
       );
 
       UserCredential result = await _auth.signInWithCredential(credential);
+      if(result.user != null) {
+        initUser(result.user!.uid);
+      }
       return result.user!.uid;
     } catch (e) {
       print(e.toString());
@@ -364,6 +392,24 @@ class AuthService {
     } catch (e) {
       print(e.toString());
     }
+  }
+
+  void initUser(String userId)async{
+    PushNotificationService.getToken().then((value) {
+      saveToken(value, userId);
+    },);
+  }
+
+  Future<void> saveToken(String? token, String userId) async {
+    return await FirebaseFirestore
+        .instance
+        .collection('users')
+        .doc(userId)
+        .update(
+        {
+          'token': token
+        }
+    );
   }
 
 }

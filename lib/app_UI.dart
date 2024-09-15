@@ -3,11 +3,12 @@ import 'package:g4_academie/screens/chat/chat_screen.dart';
 
 import 'package:g4_academie/screens/dashboard_screens/home_screnn.dart';
 import 'package:g4_academie/screens/demandes/demande.dart';
-import 'package:g4_academie/screens/payment/payment.dart';
 import 'package:g4_academie/screens/payment/payment_manager_screen.dart';
+import 'package:g4_academie/screens/payment/teacher_payment_manager.dart';
 import 'package:g4_academie/screens/profil/profil.dart';
 
 import 'package:g4_academie/services/message_service/chat_params.dart';
+import 'package:g4_academie/services/push_notification_service/push_not.dart';
 import 'package:g4_academie/theme/theme.dart';
 import 'package:g4_academie/users.dart';
 
@@ -47,6 +48,7 @@ class _AppUIState extends State<AppUI> {
 
   @override
   Widget build(BuildContext context) {
+    PushNotificationService.initialize();
     return Scaffold(
       endDrawer: Drawer(
         child: ProfileScreen(appUser: widget.appUser),
@@ -61,7 +63,7 @@ class _AppUIState extends State<AppUI> {
         ChatScreen(
           chatParams: ChatParams(widget.appUser.id, admin),
         ),
-        const PaymentManagerScreen(),
+         widget.appUser.userType == 'Enseignant' ? TeacherPaymentManager(appUser: widget.appUser,):PaymentManagerScreen(appUser: widget.appUser,),
         //const PaymentScreen(),
         DemandePage(appUser: widget.appUser,admin: admin),
       ][_currentIndex],

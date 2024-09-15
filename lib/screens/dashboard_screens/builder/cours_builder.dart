@@ -71,7 +71,7 @@ class _CoursBuilderState extends State<CoursBuilder> {
               .get();
 
           allCourses.addAll(
-              coursesSnapshot.docs.map((doc) => Cours.fromMap(doc.data())));
+              coursesSnapshot.docs.map((doc) => Cours.fromMap(doc.data(), doc.id)));
         }
 
         return allCourses;
@@ -86,7 +86,7 @@ class _CoursBuilderState extends State<CoursBuilder> {
           .snapshots()
           .map((snapshot) {
         return snapshot.docs.map((doc) {
-          return Cours.fromMap(doc.data());
+          return Cours.fromMap(doc.data(), doc.id);
         }).toList();
       });
     }
@@ -109,8 +109,8 @@ class _CoursBuilderState extends State<CoursBuilder> {
 
         return GridView.builder(
           padding: const EdgeInsets.symmetric(horizontal: 10),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2, crossAxisSpacing: 20, mainAxisSpacing: 20),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(childAspectRatio: 0.9,
+              crossAxisCount: 2, crossAxisSpacing: 15, mainAxisSpacing: 15),
           itemCount: coursList.length,
           itemBuilder: (context, index) {
             Cours cours = coursList[index];
@@ -121,94 +121,97 @@ class _CoursBuilderState extends State<CoursBuilder> {
                   return CourseDetailsPage(cours: cours, appUser: widget.appUser);
                 },));
               },
-              child: Card(
+              child: SizedBox(
+                //height: MediaQuery.of(context).size.height,
+                child: Card(
 
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                elevation: 5,
-                child: Padding(
-                  padding: const EdgeInsets.all(15.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.book, color: Colors.blueAccent),
-                          const SizedBox(width: 10),
-                          Flexible(
-                            child: Text(
-                              cours.subject,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  elevation: 5,
+                  child: Padding(
+                    padding: const EdgeInsets.all(15.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.book, color: Colors.blueAccent),
+                            const SizedBox(width: 10),
+                            Flexible(
+                              child: Text(
+                                cours.subject,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          const Icon(Icons.person, color: Colors.greenAccent),
-                          const SizedBox(width: 10),
-                          Flexible(
-                            child: widget.appUser.userType != 'Enseignant'
-                                ? Text(
-                                    cours.teacherFullName != null
-                                        ? 'Mr ${cours.teacherFullName}'
-                                        : 'Indéfini',
-                                    style: const TextStyle(
-                                      fontSize: 14,
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            const Icon(Icons.person, color: Colors.greenAccent),
+                            const SizedBox(width: 10),
+                            Flexible(
+                              child: widget.appUser.userType != 'Enseignant'
+                                  ? Text(
+                                      cours.teacherFullName != null
+                                          ? 'Mr ${cours.teacherFullName}'
+                                          : 'Indéfini',
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    )
+                                  : Text(
+                                      cours.studentFullName,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                      ),
                                     ),
-                                    overflow: TextOverflow.ellipsis,
-                                  )
-                                : Text(
-                                    cours.studentFullName,
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          const Icon(Icons.access_time,
-                              color: Colors.orangeAccent),
-                          const SizedBox(width: 10),
-                          Flexible(
-                            child: Text(
-                              cours.hoursPerWeek != null
-                                  ? '${cours.hoursPerWeek}h par semaine'
-                                  : 'Indéfinie',
-                              style: const TextStyle(
-                                fontSize: 14,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            const Icon(Icons.access_time,
+                                color: Colors.orangeAccent),
+                            const SizedBox(width: 10),
+                            Flexible(
+                              child: Text(
+                                cours.hoursPerWeek != null
+                                    ? '${cours.hoursPerWeek}h par semaine'
+                                    : 'Indéfinie',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          const Icon(Icons.info_outline, color: Colors.redAccent),
-                          const SizedBox(width: 10),
-                          Flexible(
-                            child: Text(
-                              cours.state,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: _getStatusColor(cours.state),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            const Icon(Icons.info_outline, color: Colors.redAccent),
+                            const SizedBox(width: 10),
+                            Flexible(
+                              child: Text(
+                                cours.state,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: _getStatusColor(cours.state),
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

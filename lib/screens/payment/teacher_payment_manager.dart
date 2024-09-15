@@ -11,18 +11,16 @@ import '../../payment.dart';
 import '../../users.dart';
 import '../../widgets/custom_scaffold.dart';
 
-class PaymentManagerScreen extends StatefulWidget {
+class TeacherPaymentManager extends StatefulWidget {
   final AppUser appUser;
 
-  const PaymentManagerScreen({super.key, required this.appUser});
+  const TeacherPaymentManager({super.key, required this.appUser});
 
   @override
-  State<PaymentManagerScreen> createState() => _PaymentManagerScreenState();
+  State<TeacherPaymentManager> createState() => _TeacherPaymentManagerState();
 }
 
-class _PaymentManagerScreenState extends State<PaymentManagerScreen> {
-
-
+class _TeacherPaymentManagerState extends State<TeacherPaymentManager> {
   List<Payment> _successFullPayments = [];
   List<Payment> _requestPayments = [];
 
@@ -30,16 +28,16 @@ class _PaymentManagerScreenState extends State<PaymentManagerScreen> {
 
   Future<void> _loadFullPayments() async {
     _requestPayments =
-    await PaymentService().getRequestPaymentsFromFirestore(_coursesPath);
+        await PaymentService().getRequestPaymentsFromFirestore(_coursesPath);
 
     _successFullPayments =
-    await PaymentService().getSuccessfulPaymentsFromFirestore(_coursesPath);
+        await PaymentService().getSuccessfulPaymentsFromFirestore(_coursesPath);
     //toBePaidCalculate(_courses);
   }
 
   Future<void> getKey() async {
     DocumentSnapshot<Map<String, dynamic>> data =
-    await FirebaseFirestore.instance.collection('key').doc('api_key').get();
+        await FirebaseFirestore.instance.collection('key').doc('api_key').get();
     Map<String, dynamic>? doc = data.data();
     key = doc?['key'];
   }
@@ -58,7 +56,7 @@ class _PaymentManagerScreenState extends State<PaymentManagerScreen> {
 
       for (int i = 0; i < profilList.length; i++) {
         ProfilClass profil =
-        ProfilClass.fromMap(profilList[i].data() as Map<String, dynamic>);
+            ProfilClass.fromMap(profilList[i].data() as Map<String, dynamic>);
         QuerySnapshot coursesForProfilSnapshot = await FirebaseFirestore
             .instance
             .collection('users')
@@ -143,10 +141,7 @@ class _PaymentManagerScreenState extends State<PaymentManagerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery
-        .of(context)
-        .size
-        .width;
+    final width = MediaQuery.of(context).size.width;
     return CustomScaffold(
       child: Column(
         children: [
@@ -156,10 +151,7 @@ class _PaymentManagerScreenState extends State<PaymentManagerScreen> {
           ),
           Padding(
             padding:
-            EdgeInsets.only(top: MediaQuery
-                .of(context)
-                .size
-                .height / 30),
+                EdgeInsets.only(top: MediaQuery.of(context).size.height / 30),
           ),
           Expanded(
             child: Container(
@@ -179,49 +171,60 @@ class _PaymentManagerScreenState extends State<PaymentManagerScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildPaymentOverview(),
-                    ExpansionTile(initiallyExpanded: true,title: Text(
-                      'Détails de la facturation',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18.0,
-                        color: Colors.grey[800],
+                    ExpansionTile(
+                      initiallyExpanded: true,
+                      title: Text(
+                        'Détails des revenus',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18.0,
+                          color: Colors.grey[800],
+                        ),
                       ),
-                    ),children: [
-                      FutureBuilder(future: _loadFullPayments(), builder: (context, snapshot) {
-                        if(snapshot.connectionState == ConnectionState.waiting){
-                          return const Center(child:  CircularProgressIndicator());
-                        }else{
-                          return Column(
-                            children: _buildRequestPayments(),
-                          );
-                        }
-                      },),
-                    ],),
-
-                    ExpansionTile(initiallyExpanded: true,title:Text(
-                      'Historique des transactions',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18.0,
-                        color: Colors.grey[800],
+                      children: [
+                        FutureBuilder(
+                          future: _loadFullPayments(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                  child: CircularProgressIndicator());
+                            } else {
+                              return Column(
+                                children: _buildRequestPayments(),
+                              );
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                    ExpansionTile(
+                      initiallyExpanded: true,
+                      title: Text(
+                        'Historique des transactions',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18.0,
+                          color: Colors.grey[800],
+                        ),
                       ),
-                    ), children: [
-                      FutureBuilder(future: _loadFullPayments(), builder: (context, snapshot) {
-                        if(snapshot.connectionState == ConnectionState.waiting){
-                          return const Center(child:  CircularProgressIndicator());
-                        }else{
-                          return Column(
-                            children: _buildTransactionHistory(),
-                          );
-                        }
-                      },)
-                    ],)
-
-
-
-                    // Statistiques de Paiementconst SizedBox(height: 24.0),
-
-                   // Historique des transactions
+                      children: [
+                        FutureBuilder(
+                          future: _loadFullPayments(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                  child: CircularProgressIndicator());
+                            } else {
+                              return Column(
+                                children: _buildTransactionHistory(),
+                              );
+                            }
+                          },
+                        )
+                      ],
+                    )
                   ],
                 ),
               ),
@@ -246,22 +249,22 @@ class _PaymentManagerScreenState extends State<PaymentManagerScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _buildStatisticTile(
-                    title: 'Montant à payer',
+                    title: 'Votre solde',
                     value: '${toBePaid}FCFA',
-                    color: toBePaid != 0 ? Colors.redAccent : Colors.green,
+                    color: toBePaid == 0 ? Colors.redAccent : Colors.green,
                     icon: Icons.assignment_late),
                 Flexible(
                   child: Container(
                     margin: const EdgeInsets.only(left: 10),
                     decoration:
-                    const BoxDecoration(border: Border(left: BorderSide())),
+                        const BoxDecoration(border: Border(left: BorderSide())),
                     child: Column(
                       children: [
                         TextButton(
                             onPressed: () {
-                                _scrollDown();
+                              _scrollDown();
                             },
-                            child: const Text('Historique de paiement')),
+                            child: const Text('Historique de retrait')),
                         TextButton(
                             onPressed: () async {
                               await getKey();
@@ -287,7 +290,7 @@ class _PaymentManagerScreenState extends State<PaymentManagerScreen> {
                               }
                             },
                             child: const Text(
-                              'Procéder au payement',
+                              'Demander un retrait',
                               style: TextStyle(),
                             )),
                       ],
@@ -336,145 +339,163 @@ class _PaymentManagerScreenState extends State<PaymentManagerScreen> {
 
   // Historique des transactions
   List<Widget> _buildTransactionHistory() {
-    return _successFullPayments.isEmpty? const[
-     Center(
-      child: Text(
-        'Aucune transaction',
-        textAlign: TextAlign.center,
-      ),
-    )
-    ]: _successFullPayments.map((e) {
-      final transaction = e;
-      return _buildTransactionItem(transaction);
-    },).toList();
-
+    return _successFullPayments.isEmpty
+        ? const [
+            Center(
+              child: Text(
+                'Aucune transaction',
+                textAlign: TextAlign.center,
+              ),
+            )
+          ]
+        : _successFullPayments.map(
+            (e) {
+              final transaction = e;
+              return _buildTransactionItem(transaction);
+            },
+          ).toList();
   }
 
   List<Widget> _buildRequestPayments() {
-     return _requestPayments.isEmpty? const [Center(
-       child: Text(
-         'Aucune facturation',
-         textAlign: TextAlign.center,
-       ),
-     )]: _requestPayments.map(
-       (e) {
-         Payment transaction = e;
-         return ListTile(
-           leading: const Icon(
-             Icons.close,
-             color: Colors.red,
-           ),
-           title: Text(
-             'Paiement de ${transaction.course} de ${transaction
-                 .monthOfTransaction} de (${transaction.fullName})',
-             style: const TextStyle(fontWeight: FontWeight.w600),
-           ),
-           subtitle: Text('Solde: ${transaction.amount}FCFA'),
-           trailing: TextButton(
-               onPressed: () async {
-                 if (key != null) {
-                   Navigator.of(context).push(MaterialPageRoute(
-                     builder: (context) =>
-                         KKiaPay(
-                           amount: transaction.amount,
-                           callback: (response, context) {
-                             switch (response['status']) {
-                               case PAYMENT_CANCELLED:
-                                 setState(() {});
-                                 break;
-
-                               case PAYMENT_SUCCESS:
-                                 allPaymentSuccessFunction();
-                                 break;
-                             }
-                           },
-                           apikey: key!,
-                           sandbox: false,
-                           paymentMethods: const ['momo', 'card'],
-                           countries: const ['BJ'],
-                           reason: '$appName paiement',
-                         ),
-                   ));
-                 } else {
-                   showMessage(context, 'Une erreur s\'est produite; Quittez et revenez sur la page');
-                 }
-               },
-               child: const Text('Payer')),
-         );
-       },
-     ).toList();
-    /*return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (_requestPayments.isEmpty)
-          const Center(
-            child: Text(
-              'Aucune facturation',
-              textAlign: TextAlign.center,
-            ),
-          ),
-        if (_requestPayments.isNotEmpty)
-          ListView.builder(
-            shrinkWrap: true,
-            itemCount: _requestPayments.length,
-            itemBuilder: (context, index) {
-              Payment transaction = _requestPayments[index];
+    return _requestPayments.isEmpty
+        ? const [
+            Center(
+              child: Text(
+                'Aucune facturation',
+                textAlign: TextAlign.center,
+              ),
+            )
+          ]
+        : _requestPayments.map(
+            (e) {
+              Payment transaction = e;
               return ListTile(
                 leading: const Icon(
-                  Icons.close,
-                  color: Colors.red,
+                  Icons.verified_user_sharp,
+                  color: Colors.green,
                 ),
                 title: Text(
-                  'Paiement de ${transaction.course} de ${transaction
-                      .monthOfTransaction} de (${transaction.fullName})',
+                  'Paiement de ${transaction.course} de ${transaction.monthOfTransaction})',
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
-                subtitle: Text('Solde: ${transaction.amount}'),
+                subtitle: Text('Solde: ${transaction.amount}FCFA'),
                 trailing: TextButton(
                     onPressed: () async {
                       if (key != null) {
                         Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) =>
-                              KKiaPay(
-                                amount: transaction.amount,
-                                callback: (response, context) {
-                                  switch (response['status']) {
-                                    case PAYMENT_CANCELLED:
-                                      setState(() {});
-                                      break;
+                          builder: (context) => KKiaPay(
+                            amount: transaction.amount,
+                            callback: (response, context) {
+                              switch (response['status']) {
+                                case PAYMENT_CANCELLED:
+                                  setState(() {});
+                                  break;
 
-                                    case PAYMENT_SUCCESS:
-                                      allPaymentSuccessFunction();
-                                      break;
-                                  }
-                                },
-                                apikey: key!,
-                                sandbox: false,
-                                paymentMethods: const ['momo', 'card'],
-                                countries: const ['BJ'],
-                                reason: '$appName paiement',
-                              ),
+                                case PAYMENT_SUCCESS:
+                                  allPaymentSuccessFunction();
+                                  break;
+                              }
+                            },
+                            apikey: key!,
+                            sandbox: false,
+                            paymentMethods: const ['momo', 'card'],
+                            countries: const ['BJ'],
+                            reason: '$appName paiement',
+                          ),
                         ));
                       } else {
-                        showMessage(context, 'Une erreur s\'est produite; Quittez et revenez sur la page');
+                        showMessage(context,
+                            'Une erreur s\'est produite; Quittez et revenez sur la page');
                       }
                     },
-                    child: const Text('Payer')),
+                    child: const Text('Retirer')),
               );
             },
-          ),
-      ],
-    );*/
+          ).toList();
   }
 
-  //List<Map<String, dynamic>> paymentAndCourse = [];
-
-  // Item de transaction unique
   Widget _buildTransactionItem(Payment transaction) {
     Color statusColor = Colors.green;
     DateTime dt = transaction.transactionDateTime;
 
-    return ListTile(
+    switch (transaction.state) {
+      case 'Echec':
+        return ListTile(
+          leading: CircleAvatar(
+            backgroundColor: statusColor.withOpacity(0.2),
+            child: const Icon(
+              Icons.cancel,
+              color: Colors.red,
+            ),
+          ),
+          title: Text(
+            'Montant: ${transaction.amount}FCFA',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          subtitle: Text(
+            'Date: ${dt.day}/${dt.month}/${dt.year}',
+          ),
+          trailing: const Text(
+            'Rejeté',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.red,
+            ),
+          ),
+        );
+      case 'Attente':
+        return ListTile(
+          leading: CircleAvatar(
+            backgroundColor: statusColor.withOpacity(0.2),
+            child: const Icon(
+              Icons.hourglass_bottom,
+              color: Colors.orangeAccent,
+            ),
+          ),
+          title: Text(
+            'Montant: ${transaction.amount}FCFA',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          subtitle: Text(
+            'Date: ${dt.day}/${dt.month}/${dt.year}',
+          ),
+          trailing: const Text(
+            'En attente',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.orangeAccent,
+            ),
+          ),
+        );
+      case 'Reussite':
+        ListTile(
+          leading: CircleAvatar(
+            backgroundColor: statusColor.withOpacity(0.2),
+            child: Icon(
+              Icons.check_circle,
+              color: statusColor,
+            ),
+          ),
+          title: Text(
+            'ID de la transaction: ${transaction.transactionId}',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          subtitle: Text(
+            'Date: ${dt.day}/${dt.month}/${dt.year}\nSolde: ${transaction.amount}FCFA',
+          ),
+          trailing: Text(
+            'Payé',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: statusColor,
+            ),
+          ),
+        );
+    }
+
+    return const Center(
+      child: Text("Une erreur s'est produite"),
+    ); /*ListTile(
       leading: CircleAvatar(
         backgroundColor: statusColor.withOpacity(0.2),
         child: Icon(
@@ -497,7 +518,7 @@ class _PaymentManagerScreenState extends State<PaymentManagerScreen> {
           color: statusColor,
         ),
       ),
-    );
+    );*/
   }
 
   void callback1(response, context) {
@@ -523,6 +544,4 @@ class _PaymentManagerScreenState extends State<PaymentManagerScreen> {
     PaymentService().saveSuccessfulPaymentToFirestore(
         payment: payment, coursePath: payment.coursePath);
   }
-
 }
-

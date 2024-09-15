@@ -1,51 +1,55 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Payment {
-  String paymentId;
-  String appUserId;
-  String profilId;
-  double amount;
-  String paymentMethod; // Exemple : "Credit Card", "PayPal", etc.
-  String paymentStatus; // Exemple : "Completed", "Pending", "Failed"
-  DateTime paymentDate;
-  String? transactionId; // ID de la transaction externe (optionnel)
-  String? notes; // Notes ou commentaires sur le paiement (optionnel)
+  String id;
+  int amount;
+  String transactionId;
+  String monthOfTransaction;
+  String course;
+  String fullName;
+  String coursePath;
+  String? state;
+  DateTime transactionDateTime;
 
-  Payment({
-    required this.paymentId,
-    required this.appUserId,
-    required this.profilId,
-    required this.amount,
-    required this.paymentMethod,
-    required this.paymentStatus,
-    required this.paymentDate,
-    this.transactionId,
-    this.notes,
-  });
+  Payment(
+      {required this.amount,
+        this.state,
+      required this.transactionId,
+      required this.id,
+      required this.monthOfTransaction,
+        required this.course,
+        required this.fullName,
+        required this.coursePath,
+      required this.transactionDateTime});
 
-  factory Payment.fromMap(Map<String, dynamic> map) {
+  factory Payment.fromMap(Map<String, dynamic> map,String docId) {
+    Timestamp? timestamp = map['transactionDateTime'];
+    DateTime? dateTime = timestamp?.toDate();
     return Payment(
-      paymentId: map['paymentId'] ?? '',
-      appUserId: map['appUserId'] ?? '',
-      profilId: map['profilId'] ?? '',
-      amount: (map['amount'] as num).toDouble(),
-      paymentMethod: map['paymentMethod'] ?? 'Unknown',
-      paymentStatus: map['paymentStatus'] ?? 'Pending',
-      paymentDate: DateTime.parse(map['paymentDate']),
-      transactionId: map['transactionId'],
-      notes: map['notes'],
+      state: map['state'],
+      coursePath: map['coursePath'],
+      course: map['course'],
+        fullName: map['fullName'],
+        amount: map['amount'] ?? 0,
+        transactionId: map['transactionId'] ?? '',
+        id: docId,
+        monthOfTransaction: map['monthOfTransaction'] ?? '',
+        transactionDateTime: dateTime ?? DateTime.now(),
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toMap(){
     return {
-      'paymentId': paymentId,
-      'appUserId': appUserId,
-      'profilId': profilId,
+      'state':state,
+      'coursePath':coursePath,
+      'course':course,
+      'fullName': fullName,
       'amount': amount,
-      'paymentMethod': paymentMethod,
-      'paymentStatus': paymentStatus,
-      'paymentDate': paymentDate.toIso8601String(),
       'transactionId': transactionId,
-      'notes': notes,
+      'id': id,
+      'monthOfTransaction': monthOfTransaction,
+      'transactionDateTime': transactionDateTime,
     };
   }
 }
+

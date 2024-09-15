@@ -1,5 +1,6 @@
 
 class Cours {
+  String? courseId;
   String adresse;
   String appUserId;
   String profilId;
@@ -13,8 +14,11 @@ class Cours {
   String? hoursPerWeek;
   String? startMonth;
   String? endMonth;
+  int? price;
 
   Cours({
+    this.courseId,
+    this.price,
     required this.adresse,
     required this.appUserId,
     required this.profilId,
@@ -30,7 +34,7 @@ class Cours {
     required this.state,
   });
 
-  factory Cours.fromMap(Map<String, dynamic> map) {
+  factory Cours.fromMap(Map<String, dynamic> map, String id) {
     //print("Valeur reçue : $map");
 
     List<Map<String, String>>? convertWeekDuration(dynamic value) {
@@ -47,6 +51,8 @@ class Cours {
     }
 
     return Cours(
+      courseId: id,
+      price: map['price'],
       adresse: map['adresse'] ?? '',
       appUserId: map['appUserId'] ?? '',
       profilId: map['profilId'] ?? '',

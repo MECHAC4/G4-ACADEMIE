@@ -75,7 +75,7 @@ class _WeekProgramBuilderState extends State<WeekProgramBuilder> {
             .get();
 
         // Ajouter tous les cours à la liste allCourses
-        allCourses.addAll(coursesSnapshot.docs.map((doc) => Cours.fromMap(doc.data())).toList());
+        allCourses.addAll(coursesSnapshot.docs.map((doc) => Cours.fromMap(doc.data(), doc.id)).toList());
       }
     } else {
       // Récupérer uniquement les cours pour le profil sélectionné
@@ -87,7 +87,7 @@ class _WeekProgramBuilderState extends State<WeekProgramBuilder> {
           .collection('courses')
           .get();
 
-      allCourses = coursesSnapshot.docs.map((doc) => Cours.fromMap(doc.data())).toList();
+      allCourses = coursesSnapshot.docs.map((doc) => Cours.fromMap(doc.data(), doc.id)).toList();
     }
 
     print("***********************\n\n**************************source taille: ${allCourses.length}");
