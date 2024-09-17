@@ -1,11 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:g4_academie/constants.dart';
 import 'package:g4_academie/cours.dart';
 import 'package:g4_academie/profil_class.dart';
 import 'package:g4_academie/services/payment/payment_service.dart';
 import 'package:g4_academie/services/verification.dart';
-import 'package:kkiapay_flutter_sdk/kkiapay_flutter_sdk.dart';
 
 import '../../payment.dart';
 import '../../users.dart';
@@ -24,8 +22,6 @@ class _TeacherPaymentManagerState extends State<TeacherPaymentManager> {
   List<Payment> _successFullPayments = [];
   List<Payment> _requestPayments = [];
 
-  String? key;
-
   Future<void> _loadFullPayments() async {
     _requestPayments =
         await PaymentService().getRequestPaymentsFromFirestore(_coursesPath);
@@ -33,13 +29,6 @@ class _TeacherPaymentManagerState extends State<TeacherPaymentManager> {
     _successFullPayments =
         await PaymentService().getSuccessfulPaymentsFromFirestore(_coursesPath);
     //toBePaidCalculate(_courses);
-  }
-
-  Future<void> getKey() async {
-    DocumentSnapshot<Map<String, dynamic>> data =
-        await FirebaseFirestore.instance.collection('key').doc('api_key').get();
-    Map<String, dynamic>? doc = data.data();
-    key = doc?['key'];
   }
 
   final List<Cours> _courses = [];
@@ -107,7 +96,6 @@ class _TeacherPaymentManagerState extends State<TeacherPaymentManager> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    getKey();
     loadCourses();
   }
 
@@ -188,7 +176,10 @@ class _TeacherPaymentManagerState extends State<TeacherPaymentManager> {
                             if (snapshot.connectionState ==
                                 ConnectionState.waiting) {
                               return const Center(
-                                  child: CircularProgressIndicator());
+                                  child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8.0),
+                                child: CircularProgressIndicator(),
+                              ));
                             } else {
                               return Column(
                                 children: _buildRequestPayments(),
@@ -215,7 +206,10 @@ class _TeacherPaymentManagerState extends State<TeacherPaymentManager> {
                             if (snapshot.connectionState ==
                                 ConnectionState.waiting) {
                               return const Center(
-                                  child: CircularProgressIndicator());
+                                  child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8.0),
+                                child: CircularProgressIndicator(),
+                              ));
                             } else {
                               return Column(
                                 children: _buildTransactionHistory(),
@@ -266,28 +260,8 @@ class _TeacherPaymentManagerState extends State<TeacherPaymentManager> {
                             },
                             child: const Text('Historique de retrait')),
                         TextButton(
-                            onPressed: () async {
-                              await getKey();
-                              if (key != null) {
-                                if (toBePaid != 0) {
-                                  Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) {
-                                      return KKiaPay(
-                                        countries: const ['BJ'],
-                                        amount: toBePaid,
-                                        callback: callback1,
-                                        apikey: key!,
-                                        sandbox: false,
-                                        paymentMethods: const ['momo', 'card'],
-                                        reason: '$appName paiement',
-                                      );
-                                    },
-                                  ));
-                                }
-                              } else {
-                                showMessage(
-                                    context, 'Une erreur s\'est produite');
-                              }
+                            onPressed: () {
+                              allPaymentInfoDialog(context, _requestPayments);
                             },
                             child: const Text(
                               'Demander un retrait',
@@ -369,6 +343,7 @@ class _TeacherPaymentManagerState extends State<TeacherPaymentManager> {
         : _requestPayments.map(
             (e) {
               Payment transaction = e;
+              print("Affichage de id: ${transaction.id}");
               return ListTile(
                 leading: const Icon(
                   Icons.verified_user_sharp,
@@ -380,33 +355,8 @@ class _TeacherPaymentManagerState extends State<TeacherPaymentManager> {
                 ),
                 subtitle: Text('Solde: ${transaction.amount}FCFA'),
                 trailing: TextButton(
-                    onPressed: () async {
-                      if (key != null) {
-                        Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => KKiaPay(
-                            amount: transaction.amount,
-                            callback: (response, context) {
-                              switch (response['status']) {
-                                case PAYMENT_CANCELLED:
-                                  setState(() {});
-                                  break;
-
-                                case PAYMENT_SUCCESS:
-                                  allPaymentSuccessFunction();
-                                  break;
-                              }
-                            },
-                            apikey: key!,
-                            sandbox: false,
-                            paymentMethods: const ['momo', 'card'],
-                            countries: const ['BJ'],
-                            reason: '$appName paiement',
-                          ),
-                        ));
-                      } else {
-                        showMessage(context,
-                            'Une erreur s\'est produite; Quittez et revenez sur la page');
-                      }
+                    onPressed: () {
+                      paymentInfoDialog(context, transaction);
                     },
                     child: const Text('Retirer')),
               );
@@ -521,6 +471,7 @@ class _TeacherPaymentManagerState extends State<TeacherPaymentManager> {
     );*/
   }
 
+/*
   void callback1(response, context) {
     switch (response['status']) {
       case PAYMENT_CANCELLED:
@@ -543,5 +494,208 @@ class _TeacherPaymentManagerState extends State<TeacherPaymentManager> {
   void paymentSuccessFunction(Payment payment) {
     PaymentService().saveSuccessfulPaymentToFirestore(
         payment: payment, coursePath: payment.coursePath);
+  }*/
+
+  void paymentInfoDialog(BuildContext context, Payment transaction) {
+    String paymentMethod = 'MTN_MOMO';
+    TextEditingController phoneNumberController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            content: SizedBox(
+              height: MediaQuery.of(context).size.height / 3,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10),
+                child: Column(
+                  children: [
+                    const Text(
+                      "Formulaire de demande de retrait",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          decoration: TextDecoration.underline),
+                    ),
+                    DropdownButton<String>(
+                      items: [
+                        DropdownMenuItem(
+                          value: 'MTN_MOMO',
+                          child: const Text('MTN_MOMO'),
+                          onTap: () {
+                            paymentMethod = 'MTN_MOMO';
+                          },
+                        ),
+                        DropdownMenuItem(
+                          value: 'MOOV_MONEY',
+                          child: const Text('MOOV_MONEY'),
+                          onTap: () {
+                            paymentMethod = 'MOOV_MONEY';
+                          },
+                        ),
+                        DropdownMenuItem(
+                          value: 'CELTIS_CASH',
+                          child: const Text('CELTIS_CASH'),
+                          onTap: () {
+                            paymentMethod = 'CELTIS_CASH';
+                          },
+                        ),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          paymentMethod = value!;
+                        });
+                      },
+                      value: paymentMethod,
+                    ),
+                    TextFormField(
+                      controller: phoneNumberController,
+                      keyboardType: TextInputType.phone,
+                      decoration: InputDecoration(
+                          label: const Text('Numéro de téléphone'),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10))),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Annuler')),
+                        TextButton(
+                            onPressed: () {
+                              if (phoneNumberController.text.isNotEmpty) {
+                                PaymentService().saveRequestForPayment(
+                                    transaction,
+                                    paymentMethod,
+                                    phoneNumberController.text);
+                                Navigator.of(context).pop();
+                                showMessage(context,
+                                    'Demande de retrait soumis avec succès');
+                              } else {
+                                showMessage(context,
+                                    'Entrez votre numéro de téléphone');
+                              }
+                            },
+                            child: const Text(
+                              'Demander un retrait',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            )),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
+      },
+    );
+  }
+
+  void allPaymentInfoDialog(BuildContext context, List<Payment> transactions) {
+    String paymentMethod = 'MTN_MOMO';
+    TextEditingController phoneNumberController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            content: SizedBox(
+              height: MediaQuery.of(context).size.height / 3,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10),
+                child: Column(
+                  children: [
+                    const Text(
+                      "Formulaire de demande de retrait",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          decoration: TextDecoration.underline),
+                    ),
+                    DropdownButton<String>(
+                      items: [
+                        DropdownMenuItem(
+                          value: 'MTN_MOMO',
+                          child: const Text('MTN_MOMO'),
+                          onTap: () {
+                            paymentMethod = 'MTN_MOMO';
+                          },
+                        ),
+                        DropdownMenuItem(
+                          value: 'MOOV_MONEY',
+                          child: const Text('MOOV_MONEY'),
+                          onTap: () {
+                            paymentMethod = 'MOOV_MONEY';
+                          },
+                        ),
+                        DropdownMenuItem(
+                          value: 'CELTIS_CASH',
+                          child: const Text('CELTIS_CASH'),
+                          onTap: () {
+                            paymentMethod = 'CELTIS_CASH';
+                          },
+                        ),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          paymentMethod = value!;
+                        });
+                      },
+                      value: paymentMethod,
+                    ),
+                    TextFormField(
+                      controller: phoneNumberController,
+                      keyboardType: TextInputType.phone,
+                      decoration: InputDecoration(
+                          label: const Text('Numéro de téléphone'),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10))),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Annuler')),
+                        TextButton(
+                            onPressed: () {
+                              if (phoneNumberController.text.isNotEmpty) {
+                                for (int i = 0; i < transactions.length; i++) {
+                                  Payment transaction = transactions[i];
+                                  PaymentService().saveRequestForPayment(
+                                      transaction,
+                                      paymentMethod,
+                                      phoneNumberController.text);
+                                }
+                                Navigator.of(context).pop();
+                                showMessage(context,
+                                    'Demande de retrait soumis avec succès');
+                              } else {
+                                showMessage(context,
+                                    'Entrez votre numéro de téléphone');
+                              }
+                            },
+                            child: const Text(
+                              'Demander un retrait',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            )),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
+      },
+    );
   }
 }

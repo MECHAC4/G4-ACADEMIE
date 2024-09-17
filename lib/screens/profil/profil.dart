@@ -5,6 +5,7 @@ import 'package:g4_academie/screens/profil/user_profil.dart';
 import 'package:g4_academie/services/auth_services.dart';
 import 'package:g4_academie/theme/theme.dart';
 
+import '../../services/cache/cache_service.dart';
 import '../../users.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -183,10 +184,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           switch (title) {
             case "Déconnexion":
               AuthService().signOut();
-              Navigator.of(context).pop();
-              Navigator.of(context).push(MaterialPageRoute(
+              //Navigator.of(context).pop();
+              /*Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => const SignInScreen(),
-              ));
+              ));*/
+              Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) =>const  SignInScreen(),), (route) => false,);
+              SignUpDataManager().saveSignUpInfo(widget.appUser.id, "canNotConnect");
             case 'Information de profil':
               Navigator.of(context).push(MaterialPageRoute(builder: (context) =>  UserProfilePage(user: widget.appUser),));
           }

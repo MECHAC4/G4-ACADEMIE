@@ -189,7 +189,10 @@ class _PaymentManagerScreenState extends State<PaymentManagerScreen> {
                     ),children: [
                       FutureBuilder(future: _loadFullPayments(), builder: (context, snapshot) {
                         if(snapshot.connectionState == ConnectionState.waiting){
-                          return const Center(child:  CircularProgressIndicator());
+                          return const Center(child:  Padding(
+                            padding: EdgeInsets.symmetric(vertical: 8.0),
+                            child: CircularProgressIndicator(),
+                          ));
                         }else{
                           return Column(
                             children: _buildRequestPayments(),
@@ -208,7 +211,10 @@ class _PaymentManagerScreenState extends State<PaymentManagerScreen> {
                     ), children: [
                       FutureBuilder(future: _loadFullPayments(), builder: (context, snapshot) {
                         if(snapshot.connectionState == ConnectionState.waiting){
-                          return const Center(child:  CircularProgressIndicator());
+                          return const Center(child:  Padding(
+                            padding: EdgeInsets.symmetric(vertical: 8.0),
+                            child: CircularProgressIndicator(),
+                          ));
                         }else{
                           return Column(
                             children: _buildTransactionHistory(),

@@ -7,6 +7,7 @@ import 'package:g4_academie/screens/auth_screen/signup_screen.dart';
 
 import '../../app_UI.dart';
 import '../../services/auth_services.dart';
+import '../../services/cache/cache_service.dart';
 import '../../services/verification.dart';
 import '../../theme/theme.dart';
 import '../../users.dart';
@@ -362,11 +363,18 @@ class _SignInScreenState extends State<SignInScreen>
                               setState(() {});
                               if (_appUser != null) {
                                 showMessage(context, "Connexion réussie");
-                                Navigator.of(context).push(MaterialPageRoute(
+                                SignUpDataManager().saveSignUpInfo(_appUser!.id, "canConnect");
+
+                                /*Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) => AppUI(
                                     appUser: _appUser!,
                                   ),
-                                ));
+                                ));*/
+                                Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(
+                                  builder: (context) => AppUI(
+                                    appUser: _appUser!,
+                                  ),
+                                ), (route) => false,);
                               } else {
                                 setState(() {
                                   isSigninWaiting = false;
@@ -434,14 +442,25 @@ class _SignInScreenState extends State<SignInScreen>
                               currentAppUser =
                                   await AuthService().getUserById(uid!);
                             }
-                            Navigator.of(context).push(MaterialPageRoute(
+                            Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(
                               builder: (context) {
                                 if (isSignup) {
-                                  return AppUI(appUser: currentAppUser!);
+                                  SignUpDataManager().saveSignUpInfo(currentAppUser!.id, "canConnect");
+
+                                  return AppUI(appUser: currentAppUser);
                                 }
                                 return GoogleSignUp(uid: uid!);
                               },
-                            ));
+                            ),(route) => false,);/* Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) {
+                                if (isSignup) {
+                                  SignUpDataManager().saveSignUpInfo(currentAppUser!.id, "canConnect");
+
+                                  return AppUI(appUser: currentAppUser);
+                                }
+                                return GoogleSignUp(uid: uid!);
+                              },
+                            ));*/
                           } else {
                             showMessage(context,
                                 "Une erreur s'est produite lors de l'authentification avec google");

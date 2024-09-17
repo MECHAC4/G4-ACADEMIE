@@ -1,12 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:g4_academie/payment.dart';
 
-import '../../constants.dart';
-
 class PaymentService {
   void saveSuccessfulPaymentToFirestore(
-      {required Payment payment,
-      required String coursePath}) async {
+      {required Payment payment, required String coursePath}) async {
     List<String> idList = coursePath.split('/');
     await FirebaseFirestore.instance
         .collection('users')
@@ -15,12 +12,13 @@ class PaymentService {
         .doc(idList[1])
         .collection('courses')
         .doc(idList.last)
-        .collection('success_payment')
-        .add(payment.toMap());
+        .collection('request_payment')
+        .doc(payment.id)
+        .update({'state': 'Reussite'});
 
     // delete payment in requestPayment
 
-    QuerySnapshot snapshot = await FirebaseFirestore.instance
+    /*QuerySnapshot snapshot = await FirebaseFirestore.instance
         .collection('users')
         .doc(idList.first)
         .collection('profil')
@@ -34,7 +32,7 @@ class PaymentService {
       for( QueryDocumentSnapshot doc in snapshot.docs){
         await doc.reference.delete();
       }
-    }
+    }*/
   }
 
   Future<List<Payment>> getSuccessfulPaymentsFromFirestore(
@@ -50,7 +48,8 @@ class PaymentService {
           .doc(idList[1])
           .collection('courses')
           .doc(idList.last)
-          .collection('success_payment')
+          .collection('request_payment')
+          .where('state', isNotEqualTo: 'Unpaid')
           .orderBy('transactionDateTime', descending: true)
           .get();
 
@@ -58,6 +57,9 @@ class PaymentService {
         (e) {
           final doc = e.data() as Map<String, dynamic>;
           return Payment.fromMap({
+            'fullName': doc['fullName'],
+            'course': doc['course'],
+            'coursePath': doc['coursePath'],
             'transactionId': doc['transactionId'],
             'monthOfTransaction': doc['monthOfTransaction'],
             'amount': doc['amount'],
@@ -84,16 +86,39 @@ class PaymentService {
           .collection('courses')
           .doc(idList.last)
           .collection('request_payment')
+          .where('state', isEqualTo: 'Unpaid')
           .orderBy('transactionDateTime', descending: true)
           .get();
 
       allPayment.addAll(snapshot.docs.map(
-            (e) {
+        (e) {
           final doc = e.data() as Map<String, dynamic>;
           return Payment.fromMap(doc, e.id);
         },
       ).toList());
     }
     return allPayment;
+  }
+
+  Future<void> saveRequestForPayment(
+      Payment payment, String paymentMethod, String phoneNumber) async {
+    Map<String, dynamic> saveInfo = payment.toMap();
+    saveInfo['paymentMethod'] = paymentMethod;
+    saveInfo['phoneNumber'] = phoneNumber;
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(payment.coursePath.split('/').first)
+        .collection('profil')
+        .doc(payment.coursePath.split('/')[1])
+        .collection('courses')
+        .doc(payment.coursePath.split('/').last)
+        .collection('request_payment')
+        .doc(payment.id)
+        .update({'state': 'Attente', 'transactionDateTime': DateTime.now()});
+
+    await FirebaseFirestore.instance
+        .collection('request_for_payment')
+        .add(saveInfo);
   }
 }

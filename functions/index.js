@@ -148,6 +148,7 @@ export const handleCourseStatusChange = functions.firestore
         monthOfTransaction: currentMonth,
         coursePath: coursePath,
         transactionDateTime: admin.firestore.FieldValue.serverTimestamp(),
+        state: 'Unpaid',
       };
 
       // Référence de la sous-collection request_payment
@@ -209,6 +210,7 @@ export const scheduledPayment = functions.pubsub
                 monthOfTransaction: currentMonth,
                 coursePath: coursePath,
                 transactionDateTime: admin.firestore.FieldValue.serverTimestamp(),
+                state: 'Unpaid',
               };
 
               const requestPaymentRef = courseDoc.ref.collection('request_payment');

@@ -5,6 +5,7 @@ import 'package:g4_academie/constants.dart';
 import 'package:g4_academie/screens/auth_screen/google_signup_screen.dart';
 import 'package:g4_academie/screens/auth_screen/signin_screen.dart';
 import 'package:g4_academie/services/auth_services.dart';
+import 'package:g4_academie/services/cache/cache_service.dart';
 import 'package:g4_academie/users.dart';
 
 import '../../app_UI.dart';
@@ -656,11 +657,17 @@ class _SignUpScreenState extends State<SignUpScreen>
                               setState(() {});
                               setState(() {});
                               if (_appUser != null) {
-                                Navigator.of(context).push(MaterialPageRoute(
+                                Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(
                                   builder: (context) => AppUI(
                                     appUser: _appUser!,
                                   ),
-                                ));
+                                ),(route) => false,);/*Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => AppUI(
+                                    appUser: _appUser!,
+                                  ),
+                                ));*/
+                                SignUpDataManager().saveSignUpInfo(_appUser!.id, "canConnect");
+
                               } else {
                                 setState(() {
                                   isSignupWaiting = false;
@@ -731,6 +738,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                                   ? AppUI(appUser: user!)
                                   : GoogleSignUp(uid: uid!),
                             ));
+                            SignUpDataManager().saveSignUpInfo(uid!, "canConnect");
                           } else {
                             showMessage(context,
                                 "Une erreur s'est produite lors de l'authentification avec google");

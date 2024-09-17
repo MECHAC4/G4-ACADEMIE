@@ -4,6 +4,7 @@ import 'package:g4_academie/constants.dart';
 import 'package:g4_academie/screens/auth_screen/signin_screen.dart';
 import 'package:g4_academie/services/auth_services.dart';
 
+import '../../services/cache/cache_service.dart';
 import '../../services/verification.dart';
 import '../../theme/theme.dart';
 import '../../users.dart';
@@ -27,7 +28,6 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
   final TextEditingController adresseController = TextEditingController();
   final TextEditingController studentClassController = TextEditingController();
 
-
   @override
   void initState() {
     // TODO: implement initState
@@ -36,14 +36,8 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
 
   @override
   Widget build(BuildContext context) {
-    final double width = MediaQuery
-        .of(context)
-        .size
-        .width;
-    final double height = MediaQuery
-        .of(context)
-        .size
-        .height;
+    final double width = MediaQuery.of(context).size.width;
+    final double height = MediaQuery.of(context).size.height;
     return CustomScaffold(
       child: Column(
         children: [
@@ -110,14 +104,14 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
                                 border: OutlineInputBorder(
                                   borderSide: const BorderSide(
                                     color:
-                                    Colors.black12, // Default border color
+                                        Colors.black12, // Default border color
                                   ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderSide: const BorderSide(
                                     color:
-                                    Colors.black12, // Default border color
+                                        Colors.black12, // Default border color
                                   ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -143,14 +137,14 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
                                 border: OutlineInputBorder(
                                   borderSide: const BorderSide(
                                     color:
-                                    Colors.black12, // Default border color
+                                        Colors.black12, // Default border color
                                   ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderSide: const BorderSide(
                                     color:
-                                    Colors.black12, // Default border color
+                                        Colors.black12, // Default border color
                                   ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -164,8 +158,8 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return 'Entrez votre adresse';
-                                } else
-                                if (!isValidAddress(adresseController.text)) {
+                                } else if (!isValidAddress(
+                                    adresseController.text)) {
                                   return "Format requis : ville ou village/Quartier";
                                 }
                                 return null;
@@ -177,18 +171,18 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
                                   color: Colors.black26,
                                 ),
                                 helperText:
-                                "Format pour l'adresse : Ville ou Village/Quartier",
+                                    "Format pour l'adresse : Ville ou Village/Quartier",
                                 border: OutlineInputBorder(
                                   borderSide: const BorderSide(
                                     color:
-                                    Colors.black12, // Default border color
+                                        Colors.black12, // Default border color
                                   ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderSide: const BorderSide(
                                     color:
-                                    Colors.black12, // Default border color
+                                        Colors.black12, // Default border color
                                   ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -214,8 +208,8 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
                                 hint: const Text(
                                   "Type d'utilisateur",
                                   style: TextStyle(
-                                    // color: Colors.black26,
-                                  ),
+                                      // color: Colors.black26,
+                                      ),
                                 ),
                                 items: usersType.map((e) {
                                   return DropdownMenuItem(
@@ -237,7 +231,7 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
                             if (_selectedUserType == usersType[1])
                               Container(
                                 padding:
-                                const EdgeInsets.symmetric(horizontal: 20),
+                                    const EdgeInsets.symmetric(horizontal: 20),
                                 width: width,
                                 height: subject != [] && subject!.length < 2
                                     ? 60
@@ -252,52 +246,53 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
                                       ? subject!.length + 1
                                       : subject!.length,
                                   gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                      childAspectRatio: 4,
-                                      crossAxisCount: 2),
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                          childAspectRatio: 4,
+                                          crossAxisCount: 2),
                                   itemBuilder: (context, index) {
                                     return index + 1 != subject!.length + 1
                                         ? Row(
-                                      mainAxisAlignment:
-                                      MainAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "${subject![index]}  ",
-                                        ),
-                                        IconButton(
-                                          icon: Icon(
-                                            size: height / 45,
-                                            Icons.delete,
-                                            color: Colors.red,
-                                          ),
-                                          onPressed: () {
-                                            setState(() {
-                                              subject?.removeAt(index);
-                                            });
-                                          },
-                                        ),
-                                      ],
-                                    )
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "${subject![index]}  ",
+                                              ),
+                                              IconButton(
+                                                icon: Icon(
+                                                  size: height / 45,
+                                                  Icons.delete,
+                                                  color: Colors.red,
+                                                ),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    subject?.removeAt(index);
+                                                  });
+                                                },
+                                              ),
+                                            ],
+                                          )
                                         : TextButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            addSubject(context);
-                                          });
-                                        },
-                                        child: const Text(
-                                            "Ajouter une matière"));
+                                            onPressed: () {
+                                              setState(() {
+                                                addSubject(context);
+                                              });
+                                            },
+                                            child: const Text(
+                                                "Ajouter une matière"));
                                   },
                                 ),
                               ),
-                            if(_selectedUserType == usersType[0])
+                            if (_selectedUserType == usersType[0])
                               const SizedBox(
                                 height: 25,
                               ),
-                            if(_selectedUserType == usersType[0])
+                            if (_selectedUserType == usersType[0])
                               TextFormField(
                                 controller: studentClassController,
                                 validator: (value) {
-                                  if (_selectedUserType == usersType[0] && (value == null || value.isEmpty)) {
+                                  if (_selectedUserType == usersType[0] &&
+                                      (value == null || value.isEmpty)) {
                                     return 'Entrez votre classe';
                                   }
                                   return null;
@@ -310,36 +305,26 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
                                   ),
                                   border: OutlineInputBorder(
                                     borderSide: const BorderSide(
-                                      color:
-                                      Colors.black12, // Default border color
+                                      color: Colors
+                                          .black12, // Default border color
                                     ),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderSide: const BorderSide(
-                                      color:
-                                      Colors.black12, // Default border color
+                                      color: Colors
+                                          .black12, // Default border color
                                     ),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
                               ),
-
-
-
-
-
-
-
-
-
                           ],
                         ),
                       ),
                       const SizedBox(
                         height: 25.0,
                       ),
-
 
                       // i agree to the processing
                       Row(
@@ -380,20 +365,31 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
                                 agreePersonalData) {
                               showMessage(context, "Traitement des données");
                               _appUser = await AuthService().registerWithPhone(
-                                  context,
-                                  widget.uid,
-                                  "GOOGLE_USER",
-                                  "GOOGLE_USER",
-                                  nomController.text,
-                                  prenomController.text,
-                                  adresseController.text,
-                                  _selectedUserType!,
-                                  subject: subject,
+                                context,
+                                widget.uid,
+                                "GOOGLE_USER",
+                                "GOOGLE_USER",
+                                nomController.text,
+                                prenomController.text,
+                                adresseController.text,
+                                _selectedUserType!,
+                                subject: subject,
                                 studentClass: studentClassController.text,
                               );
-                              _appUser != null ? Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (context) =>
-                                      AppUI(appUser: _appUser!),)): showMessage(context, "Une erreur s'est produite.\nVeillez reessayer");
+                              _appUser != null
+                                  ? SignUpDataManager().saveSignUpInfo(
+                                      _appUser!.id, "canConnect")
+                                  : null;
+
+                              _appUser != null
+                                  ?/* Navigator.of(context)
+                                      .push(MaterialPageRoute(
+                                      builder: (context) =>
+                                          AppUI(appUser: _appUser!),
+                                    ))*/
+                              Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => AppUI(appUser: _appUser!),),(route) => false, )
+                                  : showMessage(context,
+                                      "Une erreur s'est produite.\nVeillez reessayer");
                             } else if (!agreePersonalData) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
@@ -464,10 +460,7 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
         return AlertDialog(
           backgroundColor: Colors.white,
           content: SizedBox(
-            height: MediaQuery
-                .of(context)
-                .size
-                .height / 4,
+            height: MediaQuery.of(context).size.height / 4,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
