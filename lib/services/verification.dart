@@ -18,7 +18,7 @@ bool isValidPhoneNumber(String phoneNumber) {
 
 bool isValidAddress(String address) {
   final RegExp addressRegExp = RegExp(
-    r'^[a-zA-Z]+/[a-zA-Z]+$',
+    r'^[a-zA-Z]+,[a-zA-Z]+$',
   );
   return addressRegExp.hasMatch(address);
 }

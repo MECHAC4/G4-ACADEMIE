@@ -8,7 +8,14 @@ class ImageBuilder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          onPressed: (){
+            Navigator.of(context).pop();
+          }, icon: const Icon(Icons.arrow_back_ios),
+        ),
+      ),
       body: Center(
         child: Image.network(
           url,

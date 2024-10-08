@@ -173,7 +173,7 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                         items: widget.profiles.map((ProfilClass profile) {
                           return DropdownMenuItem<ProfilClass>(
                             value: profile,
-                            child: Text(profile.firstName),
+                            child: Text('${profile.firstName} ${profile.lastName}'),
                           );
                         }).toList(),
                       ),

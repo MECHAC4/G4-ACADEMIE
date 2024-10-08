@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../profil_class.dart';
 
 class ProfilServices {
-  void saveProfileToFirestore(
+  Future<void> saveProfileToFirestore(
       Map<String, dynamic> profil, String userId) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     CollectionReference users = firestore.collection('users');
@@ -61,7 +61,7 @@ class ProfilServices {
             "studentClass": value["studentClass"]??'',
            // "studentCount": value["isGroup"] ? value["studentCount"] : null,
             "adresse": value["adresse"],
-          });
+          }, doc.id);
         })
         .toList();
     return profiles;
@@ -89,7 +89,7 @@ class ProfilServices {
         "studentClass": data["studentClass"],
         //"studentCount": data["isGroup"] ? data["studentCount"] : null,
         "adresse": data["adresse"],
-      });
+      }, docSnapshot.id);
     } else {
       return null;
     }

@@ -10,6 +10,10 @@ class ForgetPasswordScreen extends StatefulWidget {
 class _ForgetPasswordScreenState extends State<ForgetPasswordScreen> {
   @override
   Widget build(BuildContext context) {
-    return const Text('Forget Password');
+    return const Scaffold(
+      body: Center(
+        child: Text("Cette page est indisponible pour le moment"),
+      ),
+    );
   }
 }

@@ -56,15 +56,7 @@ class PaymentService {
       allPayment.addAll(snapshot.docs.map(
         (e) {
           final doc = e.data() as Map<String, dynamic>;
-          return Payment.fromMap({
-            'fullName': doc['fullName'],
-            'course': doc['course'],
-            'coursePath': doc['coursePath'],
-            'transactionId': doc['transactionId'],
-            'monthOfTransaction': doc['monthOfTransaction'],
-            'amount': doc['amount'],
-            'transactionDateTime': doc['transactionDateTime']
-          }, e.id);
+          return Payment.fromMap(doc, e.id);
         },
       ).toList());
     }

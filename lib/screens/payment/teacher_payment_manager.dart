@@ -45,7 +45,7 @@ class _TeacherPaymentManagerState extends State<TeacherPaymentManager> {
 
       for (int i = 0; i < profilList.length; i++) {
         ProfilClass profil =
-            ProfilClass.fromMap(profilList[i].data() as Map<String, dynamic>);
+            ProfilClass.fromMap(profilList[i].data() as Map<String, dynamic>, profilList[i].id);
         QuerySnapshot coursesForProfilSnapshot = await FirebaseFirestore
             .instance
             .collection('users')
@@ -59,7 +59,7 @@ class _TeacherPaymentManagerState extends State<TeacherPaymentManager> {
         for (var element in coursesProfilList) {
           setState(() {
             _courses.add(Cours.fromMap(
-                element.data() as Map<String, dynamic>, element.id));
+                element.data() as Map<String, dynamic>, element.id, element.reference.path));
             _coursesPath.add('${widget.appUser.id}/${profil.id}/${element.id}');
           });
         }
@@ -76,16 +76,14 @@ class _TeacherPaymentManagerState extends State<TeacherPaymentManager> {
       for (var element in docList) {
         setState(() {
           _courses.add(Cours.fromMap(
-              element.data() as Map<String, dynamic>, element.id));
+              element.data() as Map<String, dynamic>, element.id, element.reference.path));
           _coursesPath
               .add('${widget.appUser.id}/${widget.appUser.id}/${element.id}');
         });
       }
     }
     await _loadFullPayments();
-    setState(() {
       toBePaidCalculate(_courses);
-    });
   }
 
   void loadCourses() async {
@@ -443,58 +441,14 @@ class _TeacherPaymentManagerState extends State<TeacherPaymentManager> {
         );
     }
 
+    print(transaction.toMap());
+
     return const Center(
       child: Text("Une erreur s'est produite"),
-    ); /*ListTile(
-      leading: CircleAvatar(
-        backgroundColor: statusColor.withOpacity(0.2),
-        child: Icon(
-          Icons.check_circle,
-          color: statusColor,
-        ),
-      ),
-      title: Text(
-        'ID de la transaction: ${transaction.transactionId}',
-        style: const TextStyle(fontWeight: FontWeight.w600),
-      ),
-      subtitle: Text(
-        'Date: ${dt.day}/${dt.month}/${dt.year}\nSolde: ${transaction
-            .amount}FCFA',
-      ),
-      trailing: Text(
-        'Payé',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: statusColor,
-        ),
-      ),
-    );*/
+    );
   }
 
-/*
-  void callback1(response, context) {
-    switch (response['status']) {
-      case PAYMENT_CANCELLED:
-        setState(() {});
-        break;
 
-      case PAYMENT_SUCCESS:
-        allPaymentSuccessFunction();
-        break;
-    }
-  }
-
-  void allPaymentSuccessFunction() {
-    for (int i = 0; i < _requestPayments.length; i++) {
-      Payment payment = _requestPayments[i];
-      paymentSuccessFunction(payment);
-    }
-  }
-
-  void paymentSuccessFunction(Payment payment) {
-    PaymentService().saveSuccessfulPaymentToFirestore(
-        payment: payment, coursePath: payment.coursePath);
-  }*/
 
   void paymentInfoDialog(BuildContext context, Payment transaction) {
     String paymentMethod = 'MTN_MOMO';

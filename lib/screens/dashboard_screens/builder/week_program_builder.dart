@@ -30,15 +30,45 @@ class WeekProgramBuilder extends StatefulWidget {
 
 class _WeekProgramBuilderState extends State<WeekProgramBuilder> {
   final EventController _eventController = EventController();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     //_loadCourses();
     _loadWeekEvents();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Vérifier si le controller est attaché avant de scroller
+      if (_scrollController.hasClients) {
+        _scrollToHalf();
+      }
+    });
 
   }
 
+
+
+  void _scrollToHalf() {
+    // Calculer la hauteur totale du contenu et faire défiler à la moitié
+    double maxScrollExtent = _scrollController.position.maxScrollExtent;
+    _scrollController.animateTo(
+      maxScrollExtent, // Défile jusqu'à la moitié
+      duration: const Duration(milliseconds: 300), // Durée du défilement
+      curve: Curves.easeInOut,
+      // Animation fluide
+    );
+  }
+
+  void _scrollTo() {
+    // Calculer la hauteur totale du contenu et faire défiler à la moitié
+    double maxScrollExtent = _scrollController.position.maxScrollExtent;
+    _scrollController.animateTo(
+      maxScrollExtent/3, // Défile jusqu'à la moitié
+      duration: const Duration(milliseconds: 300), // Durée du défilement
+      curve: Curves.easeInOut,
+      // Animation fluide
+    );
+  }
 
 
 
@@ -75,7 +105,7 @@ class _WeekProgramBuilderState extends State<WeekProgramBuilder> {
             .get();
 
         // Ajouter tous les cours à la liste allCourses
-        allCourses.addAll(coursesSnapshot.docs.map((doc) => Cours.fromMap(doc.data(), doc.id)).toList());
+        allCourses.addAll(coursesSnapshot.docs.map((doc) => Cours.fromMap(doc.data(), doc.id, doc.reference.path)).toList());
       }
     } else {
       // Récupérer uniquement les cours pour le profil sélectionné
@@ -87,10 +117,9 @@ class _WeekProgramBuilderState extends State<WeekProgramBuilder> {
           .collection('courses')
           .get();
 
-      allCourses = coursesSnapshot.docs.map((doc) => Cours.fromMap(doc.data(), doc.id)).toList();
+      allCourses = coursesSnapshot.docs.map((doc) => Cours.fromMap(doc.data(), doc.id, doc.reference.path)).toList();
     }
 
-    print("***********************\n\n**************************source taille: ${allCourses.length}");
 
     return allCourses;
   }
@@ -214,6 +243,7 @@ class _WeekProgramBuilderState extends State<WeekProgramBuilder> {
   Widget build(BuildContext context) {
     final double height = MediaQuery.of(context).size.height;
     return SingleChildScrollView(
+      controller: _scrollController,
       child: Column(
         children: [
           SizedBox(
@@ -243,6 +273,8 @@ class _WeekProgramBuilderState extends State<WeekProgramBuilder> {
                       return '';
                   }
                 },
+                showLiveTimeLineInAllDays: true,
+                //hourIndicatorSettings: const HourIndicatorSettings(color: Colors.red,height: 10),
                 headerStyle: HeaderStyle(
                   decoration: const BoxDecoration(color: Colors.white),
                   leftIcon: Icon(
@@ -271,6 +303,7 @@ class _WeekProgramBuilderState extends State<WeekProgramBuilder> {
   @override
   void dispose() {
     _eventController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 }

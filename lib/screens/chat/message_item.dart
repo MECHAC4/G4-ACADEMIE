@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:g4_academie/screens/profil/image_builder.dart';
 import 'package:g4_academie/theme/theme.dart';
 import 'package:intl/intl.dart';
 
@@ -23,7 +24,7 @@ class MessageItem extends StatelessWidget {
         Row(
           mainAxisAlignment:
               userId == message.idFrom ? MainAxisAlignment.end : MainAxisAlignment.start,
-          children: [message.type == 0 ? messageContainer() : imageContainer()],
+          children: [message.type == 0 ? messageContainer() : imageContainer(context)],
         ),
         isLastMessage
             ? Container(
@@ -42,8 +43,9 @@ class MessageItem extends StatelessWidget {
 
   Widget messageContainer() {
     return Container(
+      constraints: const BoxConstraints(maxWidth: 225, minWidth: 2),
       padding: const EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
-      width: 200.0,
+     // width: 200.0,
       decoration: BoxDecoration(
           color: userId == message.idFrom ? lightColorScheme.primary : Colors.blueGrey,
           borderRadius: BorderRadius.circular(8.0)),
@@ -55,47 +57,52 @@ class MessageItem extends StatelessWidget {
     );
   }
 
-  Widget imageContainer() {
+  Widget imageContainer(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 10.0, right: 10.0, left: 10.0),
       child: Material(
         borderRadius: const BorderRadius.all(Radius.circular(8.0)),
         clipBehavior: Clip.hardEdge,
-        child: Image.network(
-          message.content,
-          loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-            if (loadingProgress == null) return child;
-            return Container(
-              decoration: BoxDecoration(
-                color: userId == message.idFrom ? Colors.grey : Colors.blueGrey,
+        child: GestureDetector(
+          onTap: (){
+            Navigator.of(context).push(MaterialPageRoute(builder: (context) => ImageBuilder(url: message.content),));
+          },
+          child: Image.network(
+            message.content,
+            loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Container(
+                decoration: BoxDecoration(
+                  color: userId == message.idFrom ? Colors.grey : Colors.blueGrey,
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(8.0),
+                  ),
+                ),
+                width: 200.0,
+                height: 200.0,
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            },
+            errorBuilder: (context, object, stackTrace) {
+              return Material(
                 borderRadius: const BorderRadius.all(
                   Radius.circular(8.0),
                 ),
-              ),
-              width: 200.0,
-              height: 200.0,
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
-            );
-          },
-          errorBuilder: (context, object, stackTrace) {
-            return Material(
-              borderRadius: const BorderRadius.all(
-                Radius.circular(8.0),
-              ),
-              clipBehavior: Clip.hardEdge,
-              child: Image.asset(
-                'lib/Assets/img_not_available.jpeg',
-                width: 200.0,
-                height: 200.0,
-                fit: BoxFit.cover,
-              ),
-            );
-          },
-          width: 200.0,
-          height: 200.0,
-          fit: BoxFit.cover,
+                clipBehavior: Clip.hardEdge,
+                child: Image.asset(
+                  'lib/Assets/img_not_available.jpeg',
+                  width: 200.0,
+                  height: 200.0,
+                  fit: BoxFit.cover,
+                ),
+              );
+            },
+            width: 200.0,
+            height: 200.0,
+            fit: BoxFit.cover,
+          ),
         ),
       ),
     );

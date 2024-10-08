@@ -71,7 +71,10 @@ class _CoursBuilderState extends State<CoursBuilder> {
               .get();
 
           allCourses.addAll(
-              coursesSnapshot.docs.map((doc) => Cours.fromMap(doc.data(), doc.id)));
+              coursesSnapshot.docs.map((doc) {
+                print(doc.reference.path);
+                return Cours.fromMap(doc.data(), doc.id, doc.reference.path);
+              }));
         }
 
         return allCourses;
@@ -86,7 +89,7 @@ class _CoursBuilderState extends State<CoursBuilder> {
           .snapshots()
           .map((snapshot) {
         return snapshot.docs.map((doc) {
-          return Cours.fromMap(doc.data(), doc.id);
+          return Cours.fromMap(doc.data(), doc.id, doc.reference.path);
         }).toList();
       });
     }
@@ -109,7 +112,7 @@ class _CoursBuilderState extends State<CoursBuilder> {
 
         return GridView.builder(
           padding: const EdgeInsets.symmetric(horizontal: 10),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(childAspectRatio: 0.9,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(childAspectRatio: 0.7,
               crossAxisCount: 2, crossAxisSpacing: 15, mainAxisSpacing: 15),
           itemCount: coursList.length,
           itemBuilder: (context, index) {

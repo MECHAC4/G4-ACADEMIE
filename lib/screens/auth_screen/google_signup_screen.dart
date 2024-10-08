@@ -25,13 +25,27 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
 
   final TextEditingController nomController = TextEditingController();
   final TextEditingController prenomController = TextEditingController();
-  final TextEditingController adresseController = TextEditingController();
+  //final TextEditingController adresseController = TextEditingController();
   final TextEditingController studentClassController = TextEditingController();
+  final TextEditingController villeController = TextEditingController();
+  final TextEditingController quartierController = TextEditingController();
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+  }
+
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    nomController.dispose();
+    prenomController.dispose();
+    studentClassController.dispose();
+    villeController.dispose();
+    quartierController.dispose();
   }
 
   @override
@@ -154,24 +168,19 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
                               height: 25.0,
                             ),
                             TextFormField(
-                              controller: adresseController,
+                              controller: villeController,
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Entrez votre adresse';
-                                } else if (!isValidAddress(
-                                    adresseController.text)) {
-                                  return "Format requis : ville ou village/Quartier";
+                                  return 'Entrez votre ville ou village';
                                 }
                                 return null;
                               },
                               decoration: InputDecoration(
-                                label: const Text('Adresse'),
-                                hintText: 'Entrer votre adresse',
+                                label: const Text('Ville ou village'),
+                                hintText: 'Entrer votre ville',
                                 hintStyle: const TextStyle(
                                   color: Colors.black26,
                                 ),
-                                helperText:
-                                    "Format pour l'adresse : Ville ou Village/Quartier",
                                 border: OutlineInputBorder(
                                   borderSide: const BorderSide(
                                     color:
@@ -187,7 +196,77 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
+                            ),const SizedBox(
+                              height: 25.0,
                             ),
+                            TextFormField(
+                              controller: quartierController,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Entrez votre quartier';
+                                }
+                                return null;
+                              },
+                              decoration: InputDecoration(
+                                label: const Text('Quartier'),
+                                hintText: 'Entrer votre quartier',
+                                hintStyle: const TextStyle(
+                                  color: Colors.black26,
+                                ),
+                               border: OutlineInputBorder(
+                                  borderSide: const BorderSide(
+                                    color:
+                                        Colors.black12, // Default border color
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: const BorderSide(
+                                    color:
+                                        Colors.black12, // Default border color
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                             const SizedBox(
                               height: 25.0,
                             ),
@@ -371,7 +450,8 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
                                 "GOOGLE_USER",
                                 nomController.text,
                                 prenomController.text,
-                                adresseController.text,
+                                '${villeController.text.trim()}/${quartierController.text.trim()}',
+                                //adresseController.text,
                                 _selectedUserType!,
                                 subject: subject,
                                 studentClass: studentClassController.text,

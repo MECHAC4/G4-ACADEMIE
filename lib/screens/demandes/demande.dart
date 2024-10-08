@@ -32,11 +32,8 @@ class _DemandePageState extends State<DemandePage> with SingleTickerProviderStat
     String currentUserId = widget.appUser.id;
     List<CoursesNotification> notifications =
     await _notificationService.getAskForUser(currentUserId);
-
-    setState(() {
       demandes = notifications;
       //demandes = notifications.where((element) => element.type == 0,).toList();
-    });
   }
 
   @override

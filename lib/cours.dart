@@ -1,5 +1,7 @@
 
 class Cours {
+  String coursePath;
+  String peerCoursePath;
   String? courseId;
   String adresse;
   String appUserId;
@@ -17,6 +19,8 @@ class Cours {
   int? price;
 
   Cours({
+    required this.coursePath,
+    required this.peerCoursePath,
     this.courseId,
     this.price,
     required this.adresse,
@@ -34,24 +38,31 @@ class Cours {
     required this.state,
   });
 
-  factory Cours.fromMap(Map<String, dynamic> map, String id) {
-    //print("Valeur reçue : $map");
-
+  factory Cours.fromMap(Map<String, dynamic> map, String id, String path) {
     List<Map<String, String>>? convertWeekDuration(dynamic value) {
       if (value == null) return null;
-
       try {
         return List<Map<String, String>>.from(value.map((e) {
           return Map<String, String>.from(e as Map<String, dynamic>);
         }));
       } catch (e) {
-        //debugPrint("Erreur de conversion pour weekDuration : $e");
         return null;
       }
     }
+    List<String> pathDetail = path.split('/');
+    List<String> myPath = pathDetail.where((element) {
+      return pathDetail.indexOf(element)%2 == 1;
+    },).toList();
+
+    print(path);
+    print(myPath);
+
+
 
     return Cours(
       courseId: id,
+      coursePath: myPath.join('/'),
+      peerCoursePath: map["studentCoursePath"]??map["teacherCoursePath"]??'',
       price: map['price'],
       adresse: map['adresse'] ?? '',
       appUserId: map['appUserId'] ?? '',

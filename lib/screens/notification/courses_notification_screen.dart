@@ -30,6 +30,8 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
     _loadNotifications();
   }
 
+
+
   Future<void> _loadNotifications() async {
     // Remplacez 'currentUserId' par l'ID de l'utilisateur actuellement connecté
     String currentUserId = widget.appUser.id;
@@ -37,7 +39,7 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
     await _notificationService.getNotificationsForUser(currentUserId);
 
     setState(() {
-      _nonVues = notifications.where((n) => !n.estVue).toList();
+      _nonVues = notifications.where((n) => (!n.estVue && (n.type == 1 || n.type == 3 || n.type == 4 || n.type == 33 || n.type == 11))).toList();
       _vues = notifications.where((n) => n.estVue).toList();
     });
   }
@@ -79,7 +81,6 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
       itemCount: notifications.length,
       itemBuilder: (context, index) {
         CoursesNotification notification = notifications[index];
-        print("**********************${notification.toMap()}");
 
         switch(notification.type){
           case 1:

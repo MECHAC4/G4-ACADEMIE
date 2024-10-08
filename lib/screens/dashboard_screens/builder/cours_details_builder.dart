@@ -1,8 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:g4_academie/app_UI.dart';
+import 'package:g4_academie/screens/rapport_screnn/rapport_screnn.dart';
 
 import '../../../cours.dart';
 import '../../../users.dart';
+import '../../rapport_screnn/rapport_form.dart';
 
 class CourseDetailsPage extends StatefulWidget {
   final Cours cours;
@@ -23,6 +26,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
     'Bon',
     'Excellent'
   ];
+
   int? intRate;
 
   @override
@@ -30,7 +34,6 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        centerTitle: true,
         title: Text(
           widget.cours.subject,
           style: const TextStyle(color: Colors.white),
@@ -45,77 +48,167 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
               color: Colors.white,
             )),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildInfoRow(
-                  Icons.person_4, 'Elève', widget.cours.studentFullName),
-              _buildInfoRow(
-                  Icons.person,
-                  'Enseignant',
-                  widget.cours.teacherFullName != null
-                      ? widget.cours.teacherFullName!
-                      : 'Non défini'),
-              _buildInfoRow(Icons.location_on, 'Adresse', widget.cours.adresse),
-              _buildInfoRow(
-                  Icons.access_time,
-                  'Heures par semaine',
-                  (widget.cours.hoursPerWeek != null &&
-                          widget.cours.hoursPerWeek!.isNotEmpty)
-                      ? '${widget.cours.hoursPerWeek!} heures'
-                      : 'Non spécifié'),
-              _buildInfoRow(Icons.info, 'Statut', widget.cours.state),
-              const SizedBox(height: 20),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildInfoRow(
+                      Icons.person_4, 'Elève', widget.cours.studentFullName),
+                  _buildInfoRow(
+                      Icons.person,
+                      'Enseignant',
+                      widget.appUser.userType == 'Enseignant'
+                          ? '${widget.appUser.firstName} ${widget.appUser.lastName}'
+                          : widget.cours.teacherFullName ?? 'Non défini'),
+                  _buildInfoRow(
+                      Icons.location_on, 'Adresse', widget.cours.adresse),
+                  _buildInfoRow(
+                      Icons.access_time,
+                      'Heures par semaine',
+                      widget.cours.hoursPerWeek?.isNotEmpty == true
+                          ? '${widget.cours.hoursPerWeek} heures'
+                          : 'Non spécifié'),
+                  _buildInfoRow(Icons.info, 'Statut', widget.cours.state),
+                  if (widget.cours.price != null)
+                    _buildInfoRow(
+                        Icons.attach_money_rounded,
+                        widget.appUser.userType == 'Enseignant'
+                            ? 'Versement'
+                            : "Prix",
+                        '${widget.cours.price!} FCFA par mois'),
+                  const SizedBox(height: 20),
+                  if (widget.cours.weekDuration != null &&
+                      widget.cours.weekDuration!.isNotEmpty)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Programme de la semaine:',
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 8),
+                        ...widget.cours.weekDuration!.map((session) {
+                          String day = session['day'] ?? 'Jour inconnu';
+                          String startTime = session['startTime'] ?? 'null';
+                          String endTime = session['endTime'] ?? 'null';
 
-              // Week Duration (if available)
-              if (widget.cours.weekDuration != null &&
-                  widget.cours.weekDuration!.isNotEmpty)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Programme de la semaine:',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                            child: Text('$day: $startTime à $endTime',
+                                style: const TextStyle(
+                                    fontSize: 16, color: Colors.black54)),
+                          );
+                        }).toList(),
+                        const SizedBox(height: 24),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    ...widget.cours.weekDuration!.map((session) {
-                      String day = session['day'] ?? 'Jour inconnu';
-                      String startTime = session['startTime'] ?? 'null';
-                      String endTime = session['endTime'] ?? 'null';
-
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4.0),
-                        child: Text(
-                          '$day: $startTime à $endTime',
-                          style: const TextStyle(
-                              fontSize: 16, color: Colors.black54),
-                        ),
-                      );
-                    }).toList(),
-                    const SizedBox(height: 24),
-                  ],
-                ),
-
-              // Rating Section
-              if(widget.appUser.userType == 'Enseignant' || widget.cours.teacherFullName != null)
-              const SizedBox(height: 8),
-
-              if(widget.appUser.userType == 'Enseignant' || widget.cours.teacherFullName != null)
-                Center(
-                child: _buildRatingBar(),
+                  Center(
+                      child: TextButton(
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (context) => AppUI(
+                                appUser: widget.appUser,
+                                index: 2,
+                              ),
+                            ));
+                          },
+                          child: const Text("Aller à la page de paiement"))),
+                  if (widget.appUser.userType == 'Enseignant' ||
+                      widget.cours.teacherFullName != null)
+                    Center(child: _buildRatingBar()),
+                  const SizedBox(height: 16),
+                  if (widget.cours.state == 'Traité' ||
+                          widget.cours.state == 'Actif')
+                    Row(
+                      mainAxisAlignment: widget.appUser.userType == "Enseignant" ?MainAxisAlignment.spaceBetween: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => RapportScrenn(
+                                    cours: widget.cours,
+                                    appUser: widget.appUser),
+                              ));
+                            },
+                            child: const Text(
+                              "Rapports de cours",
+                              style: TextStyle(color: Colors.white),
+                            )),
+                        if (widget.appUser.userType == "Enseignant")
+                        ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => ReportFormPage(
+                                    course: widget.cours,
+                                    appUser: widget.appUser),
+                              ));
+                            },
+                            child: const Text("Faire un rapport")),
+                      ],
+                    )
+                ],
               ),
-
-              const SizedBox(height: 16),
-            ],
+            ),
           ),
-        ),
+          //const Center(child: Text("Rapports de cours")),
+        ],
       ),
     );
   }
+
+  /*List<Widget> _buildRapportList(List<Rapport>? rapports, bool isValid) {
+    if (rapports != null || rapports!.isEmpty) {
+      return const [Center(
+        child: Text("Aucun rapport"),
+      )];
+    } else {
+
+      return rapports.map((rapport) {
+        return ListTile(
+          leading: isValid
+              ? const Icon(
+            Icons.check,
+            color: Colors.green,
+          )
+              : const Icon(
+            Icons.close,
+            color: Colors.red,
+          ),
+          trailing: TextButton(
+              onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) {
+                    return PdfPreviewPage(
+                        canSend: false,
+                        canValid:
+                        !(widget.appUser.userType == 'Enseignant') &&
+                            rapport.type == 0,
+                        appUser: widget.appUser,
+                        date: rapport.content['date'],
+                        studentName: rapport.content['studentName'],
+                        level: rapport.content['level'],
+                        subject: rapport.content['subject'],
+                        theme: rapport.content['theme'],
+                        content: rapport.content['content'],
+                        participation: rapport.content['participation'],
+                        difficulties: rapport.content['difficulties'],
+                        improvement: rapport.content['improvement'],
+                        nextCourse: rapport.content['nextCourse'],
+                        homework: rapport.content['homework'],
+                        parentNote: rapport.content['parentNote'],
+                        course: widget.cours);
+                  },
+                ));
+              },
+              child: const Text("voir le rapport")),
+          title: Text("Rapport du ${rapport.content['date']}"),
+        );
+      },).toList();
+    }
+  }*/
 
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Padding(
@@ -178,19 +271,20 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                intRate != null ? '${stringRate[intRate!]} ': 'Aucune note',
+                intRate != null ? '${stringRate[intRate!]} ' : 'Aucune note',
                 style: const TextStyle(fontSize: 16),
               ),
-              if(intRate != null)
-                emojiList[intRate!]
+              if (intRate != null) emojiList[intRate!]
             ],
           ),
         ),
-        if(intRate != null)
-          TextButton(onPressed: ()async{
-            await saveRateToFirestore(intRate!);
-            intRate = null;
-          }, child: const Text('Envoyez la note'))
+        if (intRate != null)
+          TextButton(
+              onPressed: () async {
+                await saveRateToFirestore(intRate!);
+                intRate = null;
+              },
+              child: const Text('Envoyez la note'))
       ],
     );
   }
@@ -200,7 +294,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
     Text('😕', style: TextStyle(fontSize: 20)),
     Text('😐', style: TextStyle(fontSize: 20)),
     Text('😊', style: TextStyle(fontSize: 20)),
-    Text('😄', style: TextStyle(fontSize: 20)),// Très mécontent
+    Text('😄', style: TextStyle(fontSize: 20)), // Très mécontent
   ];
 
   List<Color> ratingColors = [
@@ -216,16 +310,10 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
     // 5 étoiles - Excellent (Vert forêt)
   ];
 
-
-  Future<void> saveRateToFirestore(int rate)async{
-    await FirebaseFirestore.instance.collection('notes').doc(widget.cours.teacherID).set(
-      {
-        widget.appUser.id: rate
-      }
-    );
+  Future<void> saveRateToFirestore(int rate) async {
+    await FirebaseFirestore.instance
+        .collection('notes')
+        .doc(widget.cours.teacherID)
+        .set({widget.appUser.id: rate});
   }
-
-
-
-
 }

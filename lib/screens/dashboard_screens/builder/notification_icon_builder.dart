@@ -26,35 +26,36 @@ class NotificationsIcon extends StatelessWidget {
 
   Widget _buildIconWithBadge(int count) {
     //count =5;
-    return Stack(
-      children: [
-        const Icon(Icons.notifications,  color: Colors.white,), // L'icône de notification
-        if (count > 0)
-          Positioned(
-            right: 0,
-            top: 0,
-            child: Container(
-              padding: const EdgeInsets.all(5),
-              decoration: BoxDecoration(
-                color: Colors.red.shade400, // Couleur de fond du badge
-                borderRadius: BorderRadius.circular(10),
-              ),
-              constraints: const BoxConstraints(
-                minWidth: 20,
-                minHeight: 20,
-              ),
-              child: Text(
-                '$count',
-                style: const TextStyle(
-                  color: Colors.white, // Couleur du texte
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
+    return Padding(
+      padding: const EdgeInsets.only(right: 18.0),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          const Icon(Icons.notifications_active,  color: Colors.white, size: 25,), // L'icône de notification
+          if (count > 0)
+            Positioned(
+              // Positionnement du badge en haut à droite
+              right: -10,  // Ajustez pour positionner parfaitement
+              top: -8,    // Ajustez pour positionner parfaitement
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                //margin: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(
+                  color: Colors.red, // Couleur du badge
+                  shape: BoxShape.circle, // Forme du badge
                 ),
-                textAlign: TextAlign.center,
+                child: Text(
+                  '$count',
+                  style: const TextStyle(
+                    color: Colors.white, // Couleur du texte dans le badge
+                    fontSize: 12, // Taille du texte
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
-          )
-      ],
+        ],
+      ),
     );
   }
 }

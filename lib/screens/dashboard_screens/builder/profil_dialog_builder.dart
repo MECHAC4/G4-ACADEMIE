@@ -1,10 +1,39 @@
-
-
 import 'package:flutter/material.dart';
+import 'package:g4_academie/app_UI.dart';
+import 'package:g4_academie/services/verification.dart';
+import 'package:g4_academie/users.dart';
 
+import '../../../profil_class.dart';
 import '../../../services/profil_services.dart';
 
-void showProfileDialog(BuildContext context, String uid, String adresse) {
+bool verifyExistentProfile(
+    List<ProfilClass> profiles, String firstName, String lastName) {
+  bool isExist = false;
+
+  for (int i = 0; i < profiles.length; i++) {
+    ProfilClass profil = profiles[i];
+    if (profil.firstName.trim() == firstName.trim() &&
+        profil.lastName.trim() == lastName.trim()) {
+      isExist = true;
+      break;
+    } else if (profil.firstName.trim() == lastName.trim() &&
+        profil.lastName.trim() == firstName.trim()) {
+      isExist = true;
+      break;
+    }
+  }
+
+  return isExist;
+}
+
+void showProfileDialog(BuildContext context, String uid, String adresse,
+    List<ProfilClass> profiles, AppUser appUser) async {
+  if (profiles.isEmpty) {
+    profiles = await ProfilServices().fetchProfiles(uid);
+  }
+  final formKey = GlobalKey<FormState>();
+  bool isDelayed = false;
+
   showDialog(
     context: context,
     builder: (BuildContext context) {
@@ -51,26 +80,56 @@ void showProfileDialog(BuildContext context, String uid, String adresse) {
                           });
                         },
                       ),*/
-  /*if (!isGroup) ...[*/
-                        TextField(
-                          decoration: const InputDecoration(labelText: 'Prénom'),
-                          onChanged: (value) {
-                            firstName = value;
-                          },
+                      /*if (!isGroup) ...[*/
+
+                      Form(
+                        key: formKey,
+                        child: Column(
+                          children: [
+                            TextFormField(
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return "Entrez un nom";
+                                }
+                                return null;
+                              },
+                              decoration:
+                              const InputDecoration(labelText: 'Nom'),
+                              onChanged: (value) {
+                                lastName = value;
+                              },
+                            ),
+                            TextFormField(
+                              decoration:
+                                  const InputDecoration(labelText: 'Prénom'),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return "Entrez un prénom";
+                                }
+                                return null;
+                              },
+                              onChanged: (value) {
+                                firstName = value;
+                              },
+                            ),
+
+                            TextFormField(
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return "Entrez une classe";
+                                }
+                                return null;
+                              },
+                              decoration:
+                                  const InputDecoration(labelText: 'Classe'),
+                              onChanged: (value) {
+                                studentClass = value;
+                              },
+                            ),
+                          ],
                         ),
-                        TextField(
-                          decoration: const InputDecoration(labelText: 'Nom'),
-                          onChanged: (value) {
-                            lastName = value;
-                          },
-                        ),
-                        TextField(
-                          decoration: const InputDecoration(labelText: 'Classe'),
-                          onChanged: (value) {
-                            studentClass = value;
-                          },
-                        ),
-          /* ] else ...[
+                      ),
+                      /* ] else ...[
                         TextField(
                           decoration: const InputDecoration(labelText: 'Nom du groupe'),
                           onChanged: (value) {
@@ -84,17 +143,33 @@ void showProfileDialog(BuildContext context, String uid, String adresse) {
                       ],*/
                       const SizedBox(height: 20),
                       ElevatedButton(
-                        onPressed: () {
-                          ProfilServices().saveProfileToFirestore({
-                            //"isGroup": isGroup,
-                            "firstName":  firstName,
-                            "lastName":  lastName,
-                           // "groupName": isGroup ? groupName : null,
-                            "studentClass": studentClass,
-                            //"studentCount": isGroup ? studentCount : null,
-                            "adresse": adresse,
-                          },uid);
-                          Navigator.of(context).pop();
+                        onPressed: () async {
+                          if (formKey.currentState!.validate()) {
+                            if (!verifyExistentProfile(
+                                profiles, firstName, lastName)) {
+                              await ProfilServices().saveProfileToFirestore({
+                                //"isGroup": isGroup,
+                                "firstName": firstName,
+                                "lastName": lastName,
+                                // "groupName": isGroup ? groupName : null,
+                                "studentClass": studentClass,
+                                //"studentCount": isGroup ? studentCount : null,
+                                "adresse": adresse,
+                              }, uid);
+                              setState(() {
+                                isDelayed = true;
+                              });
+                              Future.delayed(const Duration(seconds: 5));
+                              Navigator.of(context).pop();
+                              Navigator.of(context).push(MaterialPageRoute(builder: (context) => AppUI(appUser: appUser,index: 0,),));
+                            } else {
+                              showMessage(context,
+                                  "Vous avez déjà un profil ayant le même nom");
+                            }
+                          } else {
+                            showMessage(
+                                context, "Veuillez bien remplir les champs");
+                          }
                           /*ProfilClass profil = ProfilClass(
                             isGroup: isGroup,
                             firstName: isGroup ? null : firstName,
@@ -105,7 +180,9 @@ void showProfileDialog(BuildContext context, String uid, String adresse) {
                             adresse: adresse,
                           );*/
                         },
-                        child: const Text('Enregistrer'),
+                        child: isDelayed
+                            ? const CircularProgressIndicator(color: Colors.white,)
+                            : const Text('Enregistrer'),
                       ),
                     ],
                   ),

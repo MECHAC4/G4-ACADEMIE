@@ -13,6 +13,8 @@ class CoursesNotification {
   final DateTime dateEnvoi;
   final int? type;
   final String coursePath;
+  final String? cause;
+  final int? price;
 
   CoursesNotification({
     required this.coursePath,
@@ -29,11 +31,14 @@ class CoursesNotification {
     required this.idFrom,
     this.estVue = false,
     required this.dateEnvoi,
+    this.price,
+    this.cause,
   });
 
   // Méthode pour convertir en Map pour Firebase
   Map<String, dynamic> toMap() {
     return {
+      'price':price,
       'coursePath': coursePath,
       'type': type,
       'id': id,
@@ -48,12 +53,15 @@ class CoursesNotification {
       'idFrom': idFrom,
       'estVue': estVue,
       'dateEnvoi': dateEnvoi.toIso8601String(),
+      'cause': cause,
     };
   }
 
   // Méthode pour créer une instance depuis un Map
   factory CoursesNotification.fromMap(Map<String, dynamic> map, String id) {
     return CoursesNotification(
+      price: map['price'],
+      cause: map['cause'],
       coursePath: map['coursePath'],
       type: map['type'],
       id: id,

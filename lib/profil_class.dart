@@ -20,9 +20,9 @@ class ProfilClass {
 
 
 
-  factory ProfilClass.fromMap(Map<String, dynamic> map) {
+  factory ProfilClass.fromMap(Map<String, dynamic> map, String docId) {
     return ProfilClass(
-      id: map['id'],
+      id: docId,
       //isGroup: map['isGroup'],
       firstName: map['firstName'],
       lastName: map['lastName'],

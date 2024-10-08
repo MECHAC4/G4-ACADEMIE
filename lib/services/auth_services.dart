@@ -84,7 +84,7 @@ class AuthService {
   }
 
 
-  Future<String?> verifyPhoneNumber(BuildContext context, String phone) async {
+  /*Future<String?> verifyPhoneNumber(BuildContext context, String phone) async {
     await _auth.verifyPhoneNumber(
       phoneNumber: phone,
       verificationCompleted: (PhoneAuthCredential credential) async {
@@ -196,7 +196,7 @@ class AuthService {
       },
     );
     return _auth.currentUser?.uid;
-  }
+  }*/
 
 
   // Enregistrement par numéro de téléphone

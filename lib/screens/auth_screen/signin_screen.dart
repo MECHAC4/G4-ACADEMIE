@@ -1,5 +1,6 @@
 import 'package:country_code_picker/country_code_picker.dart'
     show CountryCodePicker;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:g4_academie/constants.dart';
 import 'package:g4_academie/screens/auth_screen/forget_passsword_screen.dart';
@@ -31,11 +32,18 @@ class _SignInScreenState extends State<SignInScreen>
   final TextEditingController phoneNumberController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
+  bool isPView = true;
+  bool isPhoneVer = false;
+
+
 
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
+    phoneNumberController.dispose();
+    passwordController.dispose();
+    emailController.dispose();
   }
 
   late TabController _tabController;
@@ -181,6 +189,11 @@ class _SignInScreenState extends State<SignInScreen>
                                             ),
                                           ),
                                           TextFormField(
+                                            onChanged: (value) {
+                                              setState(() {
+                                                isPhoneVer = false;
+                                              });
+                                            },
                                             controller: phoneNumberController,
                                             keyboardType: TextInputType.phone,
                                             validator: (value) {
@@ -197,13 +210,22 @@ class _SignInScreenState extends State<SignInScreen>
                                                   onPressed: () async {
                                                     if (isValidPhoneNumber(
                                                         phoneNumberController
-                                                            .text)) {
-                                                      uid = await AuthService()
+                                                            .text) && !isPhoneVer) {
+                                                      setState(() {
+                                                        isPhoneVer = true;
+                                                      });
+                                                      uid = await verifyPhoneNumber(
+                                                          context,
+                                                          _countriesNumber +
+                                                              phoneNumberController
+                                                                  .text);
+                                                      /*uid = await AuthService()
                                                           .verifyPhoneNumber(
                                                               context,
                                                               _countriesNumber +
                                                                   phoneNumberController
-                                                                      .text);
+                                                                      .text);*/
+                                                      Future.delayed(const Duration(seconds: 4));
                                                       setState(() {
                                                         (uid == null)
                                                             ? isPhoneNumberVerified =
@@ -211,6 +233,7 @@ class _SignInScreenState extends State<SignInScreen>
                                                             : isPhoneNumberVerified =
                                                                 true;
                                                       });
+                                                      isPhoneVer = false;
                                                     }
                                                   },
                                                   child: isPhoneNumberVerified
@@ -220,7 +243,7 @@ class _SignInScreenState extends State<SignInScreen>
                                                               lightColorScheme
                                                                   .primary,
                                                         )
-                                                      : const Text(
+                                                      :isPhoneVer?const Center(child: CircularProgressIndicator(),): const Text(
                                                           "Vérifier",
                                                           style: TextStyle(
                                                               color:
@@ -259,7 +282,7 @@ class _SignInScreenState extends State<SignInScreen>
                             ),
                             TextFormField(
                               controller: passwordController,
-                              obscureText: true,
+                              obscureText: isPView,
                               obscuringCharacter: '*',
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
@@ -268,6 +291,11 @@ class _SignInScreenState extends State<SignInScreen>
                                 return null;
                               },
                               decoration: InputDecoration(
+                                suffixIcon: IconButton(onPressed: (){
+                                  setState(() {
+                                    isPView = !isPView;
+                                  });
+                                }, icon: Icon(isPView? Icons.visibility: Icons.visibility_off)),
                                 label: const Text('Mot de passe'),
                                 hintText: 'Entrez votre mot de passe',
                                 hintStyle: const TextStyle(
@@ -526,4 +554,130 @@ class _SignInScreenState extends State<SignInScreen>
 
   bool isSigninWaiting = false;
   bool isGoogleCliked = false;
+
+
+final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  Future<String?> verifyPhoneNumber(BuildContext context, String phone) async {
+    await _auth.verifyPhoneNumber(
+      phoneNumber: phone,
+      verificationCompleted: (PhoneAuthCredential credential) async {
+        await _auth.signInWithCredential(credential);
+        showMessage(context, "Numéro de téléphone vérifié");
+      },
+      verificationFailed: (FirebaseAuthException e) {
+        showMessage(context, "Echec de la vérification");
+      },
+      codeSent: (String verificationId, int? resendToken) {
+        showMessage(context,
+            "Un code de vérification est envoyé au $phone.\nIl sera expiré dans 60 secondes");
+        showDialog(context: context, builder: (context) {
+          final double width = MediaQuery
+              .of(context)
+              .size
+              .width;
+          final double height = MediaQuery
+              .of(context)
+              .size
+              .height;
+          final TextEditingController smsCodeController = TextEditingController();
+          return AlertDialog(
+            backgroundColor: Colors.white,
+            contentPadding: EdgeInsets.symmetric(
+                horizontal: width / 10, vertical: height / 15),
+            content: SizedBox(
+              height: height / 4,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextFormField(
+                    keyboardType: TextInputType.number,
+                    controller: smsCodeController,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Veillez entrer le code de vérification envoyé sur $phone';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      label: const Text('Code de vérification'),
+                      hintText: 'Entrez le code de vérification',
+                      hintStyle: const TextStyle(
+                        color: Colors.black26,
+                      ),
+                      border: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Colors.black12, // Default border color
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Colors.black12, // Default border color
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  TextButton(onPressed: () {
+                    Navigator.of(context).pop();
+                    verifyPhoneNumber(context, phone);
+                  },
+                      child: const Text(
+                          "Renvoyez le code", style: TextStyle(color: Colors
+                          .white))),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ElevatedButton(onPressed: () {
+                        Navigator.of(context).pop();
+                      }, child: const Text(
+                        "Annuler", style: TextStyle(color: Colors.white),)),
+                      ElevatedButton(
+                        onPressed: () async {
+                          PhoneAuthCredential credential = PhoneAuthProvider
+                              .credential(
+                            verificationId: verificationId,
+                            smsCode: smsCodeController.text,
+                          );
+                          try {
+                            await _auth.signInWithCredential(credential);
+                            if (_auth.currentUser != null) {
+                              Navigator.of(context).pop();
+                              setState(() {
+                                isPhoneNumberVerified = true;
+                              });
+                              showMessage(context, "Vérification réussie");
+                            }
+                          } catch (e) {
+                            showMessage(context,
+                                "Échec de la vérification : code invalide");
+                          }
+                        },
+                        child: const Text(
+                          "Vérifier", style: TextStyle(color: Colors.white),),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },);
+      },
+      timeout: const Duration(seconds: 61),
+      codeAutoRetrievalTimeout: (
+          String verificationId) { // Code de vérification automatique expiré
+        showMessage(context,
+            "Le code de vérification est expiré.\nDemandez un nouveau");
+      },
+    );
+    if(_auth.currentUser?.uid != null && _auth.currentUser!.uid.isNotEmpty) {
+      setState(() {
+        isPhoneNumberVerified = true;
+      });
+    }
+    return _auth.currentUser?.uid;
+  }
+
 }

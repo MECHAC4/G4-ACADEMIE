@@ -1,9 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:g4_academie/screens/verification/verification.dart';
 
 import '../../users.dart';
-import 'image_builder.dart';
 
 class UserProfilePage extends StatelessWidget {
   final AppUser user;
@@ -43,49 +41,41 @@ class UserProfilePage extends StatelessWidget {
             )),
         elevation: 0,
       ),
-      body: FutureBuilder(
-        future: getVerificationData(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasData && snapshot.data != null) {
-            final verificationData = snapshot.data as Map<String, dynamic>;
-            return _buildProfileWithVerification(context, verificationData);
-          } else {
-            return _buildProfileWithoutVerification(context);
-          }
+      body: Builder(
+        builder: (context) {
+          return _buildUserInfoSection();
         },
       ),
     );
   }
 
-  Widget _buildProfileWithVerification(
+  /*Widget _buildProfileWithVerification(
       BuildContext context, Map<String, dynamic> verificationData) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Image de profil
-          _buildProfileImage(context,verificationData['profileImage']),
+          //_buildProfileImage(context,verificationData['profileImage']),
           const SizedBox(height: 16),
 
           // Informations utilisateur
           _buildUserInfoSection(),
-          const Divider(height: 30, thickness: 2),
+          //const Divider(height: 30, thickness: 2),
 
           // Vérification des documents
-          const Text(
+          /*const Text(
             'Informations de vérification',
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          _buildVerificationDocuments(context,verificationData),
-          const SizedBox(height: 16),
+          ),*/
+          //const SizedBox(height: 16),
+          //_buildVerificationDocuments(context,verificationData),
+          //const SizedBox(height: 16),
 
           // Statut de vérification
-          _buildVerificationStatus(verificationData['status']),
-          if(verificationData['status'] == 'Non vérifié')
-          ElevatedButton.icon(
+          //_buildVerificationStatus(verificationData['status']),
+          //if(verificationData['status'] == 'Non vérifié')
+          /*ElevatedButton.icon(
             onPressed: () {
               Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => VerificationStepPage(
@@ -102,14 +92,14 @@ class UserProfilePage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-          ),
+          ),*/
           const Text('\n'),
         ],
       ),
     );
-  }
+  }*/
 
-  Widget _buildProfileWithoutVerification(BuildContext context) {
+  /*Widget _buildProfileWithoutVerification(BuildContext context) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -158,9 +148,9 @@ class UserProfilePage extends StatelessWidget {
         ],
       ),
     );
-  }
+  }*/
 
-  Widget _buildProfileImage(BuildContext context,String? imageUrl) {
+  /*Widget _buildProfileImage(BuildContext context,String? imageUrl) {
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -186,7 +176,7 @@ class UserProfilePage extends StatelessWidget {
         ),
       ],
     );
-  }
+  }*/
 
   Widget _buildUserInfoSection() {
     return Padding(
@@ -262,7 +252,7 @@ class UserProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildVerificationDocuments(BuildContext context,Map<String, dynamic> verificationData) {
+  /*Widget _buildVerificationDocuments(BuildContext context,Map<String, dynamic> verificationData) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -274,9 +264,9 @@ class UserProfilePage extends StatelessWidget {
         ],
       ),
     );
-  }
+  }*/
 
-  Widget _buildDocumentImage(BuildContext context,String url, String label) {
+  /*Widget _buildDocumentImage(BuildContext context,String url, String label) {
     return Column(
       children: [
         GestureDetector(
@@ -297,9 +287,9 @@ class UserProfilePage extends StatelessWidget {
         Text(label),
       ],
     );
-  }
+  }*/
 
-  Widget _buildVerificationStatus(String status) {
+  /*Widget _buildVerificationStatus(String status) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -322,5 +312,5 @@ class UserProfilePage extends StatelessWidget {
         ],
       ),
     );
-  }
+  }*/
 }

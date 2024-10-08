@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:g4_academie/users.dart';
 
+import '../profil_class.dart';
 import '../screens/dashboard_screens/builder/profil_dialog_builder.dart';
 
 class CustomScaffold extends StatelessWidget {
   final bool? buttonExist;
   final AppUser? appUser;
+  final List<ProfilClass>? profils;
 
   const CustomScaffold(
-      {super.key, this.child, this.buttonExist, this.appUser});
+      {super.key, this.child, this.buttonExist, this.appUser, this.profils});
 
   final Widget? child;
 
@@ -42,7 +44,7 @@ class CustomScaffold extends StatelessWidget {
           ? FloatingActionButton(
               onPressed: () {
                 if(appUser?.userType == "Parent d'élève" || appUser?.userType =="Elève"){
-                  showProfileDialog(context, appUser!.id, appUser!.address);
+                  showProfileDialog(context, appUser!.id, appUser!.address, profils!, appUser!);
                 }
               },
               child: Text(

@@ -8,12 +8,12 @@ class Payment {
   String course;
   String fullName;
   String coursePath;
-  String? state;
+  String state;
   DateTime transactionDateTime;
 
   Payment(
       {required this.amount,
-        this.state,
+        required this.state,
       required this.transactionId,
       required this.id,
       required this.monthOfTransaction,

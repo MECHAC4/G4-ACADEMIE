@@ -58,7 +58,7 @@ class _PaymentManagerScreenState extends State<PaymentManagerScreen> {
 
       for (int i = 0; i < profilList.length; i++) {
         ProfilClass profil =
-        ProfilClass.fromMap(profilList[i].data() as Map<String, dynamic>);
+        ProfilClass.fromMap(profilList[i].data() as Map<String, dynamic>, profilList[i].id);
         QuerySnapshot coursesForProfilSnapshot = await FirebaseFirestore
             .instance
             .collection('users')
@@ -72,7 +72,7 @@ class _PaymentManagerScreenState extends State<PaymentManagerScreen> {
         for (var element in coursesProfilList) {
           setState(() {
             _courses.add(Cours.fromMap(
-                element.data() as Map<String, dynamic>, element.id));
+                element.data() as Map<String, dynamic>, element.id, element.reference.path));
             _coursesPath.add('${widget.appUser.id}/${profil.id}/${element.id}');
           });
         }
@@ -89,16 +89,16 @@ class _PaymentManagerScreenState extends State<PaymentManagerScreen> {
       for (var element in docList) {
         setState(() {
           _courses.add(Cours.fromMap(
-              element.data() as Map<String, dynamic>, element.id));
+              element.data() as Map<String, dynamic>, element.id, element.reference.path));
           _coursesPath
               .add('${widget.appUser.id}/${widget.appUser.id}/${element.id}');
         });
       }
     }
     await _loadFullPayments();
-    setState(() {
+
       toBePaidCalculate(_courses);
-    });
+
   }
 
   void loadCourses() async {

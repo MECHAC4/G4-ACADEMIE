@@ -57,7 +57,7 @@ class _ChatState extends State<Chat> {
         Column(
           children: [buildListMessage(), buildInput()],
         ),
-        isLoading ? const CircularProgressIndicator() : Container()
+        isLoading ? const Align(alignment: Alignment.center,child: CircularProgressIndicator()) : Container()
       ],
     );
   }
@@ -98,6 +98,7 @@ class _ChatState extends State<Chat> {
     return Container(
       width: double.infinity,
       height: 75.0,
+      padding: const EdgeInsets.only(bottom: 5),
       margin: const EdgeInsets.symmetric(horizontal: 10),
       decoration:  BoxDecoration(
           border: Border.all(color: Colors.black26),
@@ -118,8 +119,9 @@ class _ChatState extends State<Chat> {
           ),
           Flexible(
             child: TextField(
+              maxLines: null,
               onSubmitted: (value) {
-                onSendMessage(textEditingController.text, 0);
+                onSendMessage(textEditingController.text.trim(), 0);
               },
               style: const TextStyle(color: Colors.blueGrey, fontSize: 15.0),
               controller: textEditingController,
