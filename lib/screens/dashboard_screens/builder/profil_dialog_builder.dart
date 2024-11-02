@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:g4_academie/app_UI.dart';
+import 'package:g4_academie/screens/dashboard_screens/builder/add_cours_builder.dart';
 import 'package:g4_academie/services/verification.dart';
 import 'package:g4_academie/users.dart';
 
+import '../../../constants.dart';
 import '../../../profil_class.dart';
 import '../../../services/profil_services.dart';
 
@@ -27,12 +29,16 @@ bool verifyExistentProfile(
 }
 
 void showProfileDialog(BuildContext context, String uid, String adresse,
-    List<ProfilClass> profiles, AppUser appUser) async {
+    List<ProfilClass> profiles, AppUser appUser,
+    {bool isAnormal = false, String? frequence, String? matiere}) async {
   if (profiles.isEmpty) {
     profiles = await ProfilServices().fetchProfiles(uid);
   }
   final formKey = GlobalKey<FormState>();
   bool isDelayed = false;
+  String firstName1 = '';
+  String lastName1 = '';
+  String studentClass1 = '';
 
   showDialog(
     context: context,
@@ -40,7 +46,7 @@ void showProfileDialog(BuildContext context, String uid, String adresse,
       //bool isGroup = false;
       String firstName = '';
       String lastName = '';
-      String studentClass = '';
+      String? studentClass;
 
       return StatefulBuilder(
         builder: (context, setState) {
@@ -58,9 +64,11 @@ void showProfileDialog(BuildContext context, String uid, String adresse,
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'Créer un profil',
-                            style: TextStyle(
+                          Text(
+                            isAnormal
+                                ? "Informations sur l'élève"
+                                : 'Créer un profil',
+                            style: const TextStyle(
                                 fontSize: 20, fontWeight: FontWeight.bold),
                           ),
                           IconButton(
@@ -89,19 +97,26 @@ void showProfileDialog(BuildContext context, String uid, String adresse,
                             TextFormField(
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return "Entrez un nom";
+                                  return "Entrez un  nom";
                                 }
                                 return null;
                               },
-                              decoration:
-                              const InputDecoration(labelText: 'Nom'),
+                              decoration: InputDecoration(
+                                  labelText: 'Nom de l\'élève',
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10))),
                               onChanged: (value) {
                                 lastName = value;
                               },
                             ),
+                            const SizedBox(
+                              height: 20,
+                            ),
                             TextFormField(
-                              decoration:
-                                  const InputDecoration(labelText: 'Prénom'),
+                              decoration: InputDecoration(
+                                  labelText: 'Prénom de l\'élève',
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10))),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return "Entrez un prénom";
@@ -112,8 +127,33 @@ void showProfileDialog(BuildContext context, String uid, String adresse,
                                 firstName = value;
                               },
                             ),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            DropdownButtonFormField<String>(
+                              decoration: InputDecoration(
+                                labelText: 'Sélectionner une classe',
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10)),
+                              ),
+                              //hint: const Text("Sélectionner une classe"),
+                              value: studentClass,
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  if (newValue != null) {
+                                    studentClass = newValue;
+                                  }
+                                });
+                              },
+                              items: classes.map((String className) {
+                                return DropdownMenuItem<String>(
+                                  value: className,
+                                  child: Text(className),
+                                );
+                              }).toList(),
+                            ),
 
-                            TextFormField(
+                            /*TextFormField(
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return "Entrez une classe";
@@ -125,7 +165,7 @@ void showProfileDialog(BuildContext context, String uid, String adresse,
                               onChanged: (value) {
                                 studentClass = value;
                               },
-                            ),
+                            ),*/
                           ],
                         ),
                       ),
@@ -142,47 +182,65 @@ void showProfileDialog(BuildContext context, String uid, String adresse,
                         ),
                       ],*/
                       const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: () async {
-                          if (formKey.currentState!.validate()) {
-                            if (!verifyExistentProfile(
-                                profiles, firstName, lastName)) {
-                              await ProfilServices().saveProfileToFirestore({
-                                //"isGroup": isGroup,
-                                "firstName": firstName,
-                                "lastName": lastName,
-                                // "groupName": isGroup ? groupName : null,
-                                "studentClass": studentClass,
-                                //"studentCount": isGroup ? studentCount : null,
-                                "adresse": adresse,
-                              }, uid);
-                              setState(() {
-                                isDelayed = true;
-                              });
-                              Future.delayed(const Duration(seconds: 5));
-                              Navigator.of(context).pop();
-                              Navigator.of(context).push(MaterialPageRoute(builder: (context) => AppUI(appUser: appUser,index: 0,),));
+                      Align(
+                        alignment: Alignment.bottomRight,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            if (formKey.currentState!.validate() && studentClass!=null) {
+                              if (!verifyExistentProfile(
+                                  profiles, firstName, lastName)) {
+                                firstName1 = firstName;
+                                lastName1 = lastName;
+                                studentClass1 = studentClass!;
+                                await ProfilServices().saveProfileToFirestore({
+                                  //"isGroup": isGroup,
+                                  "firstName": firstName,
+                                  "lastName": lastName,
+                                  // "groupName": isGroup ? groupName : null,
+                                  "studentClass": studentClass,
+                                  //"studentCount": isGroup ? studentCount : null,
+                                  "adresse": adresse,
+                                }, uid);
+                                setState(() {
+                                  isDelayed = true;
+                                });
+                                Future.delayed(const Duration(seconds: 5));
+                                Navigator.of(context).pop();
+                                if (!isAnormal) {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => AppUI(
+                                      appUser: appUser,
+                                      index: 0,
+                                    ),
+                                  ));
+                                }else{
+                                  final pro = ProfilClass(id: '', firstName: firstName1, lastName: lastName1, studentClass: studentClass1, adresse: adresse);
+                                  Navigator.of(context).push(MaterialPageRoute(builder: (context) => AddCourseDialog(appUser: appUser, profiles: profiles,frequence: frequence,matiere: matiere,selected: pro,),));
+                                }
+                              } else {
+                                showMessage(context,
+                                    "Vous avez déjà un profil ayant le même nom");
+                              }
                             } else {
-                              showMessage(context,
-                                  "Vous avez déjà un profil ayant le même nom");
+                              showMessage(
+                                  context, "Veuillez bien remplir les champs");
                             }
-                          } else {
-                            showMessage(
-                                context, "Veuillez bien remplir les champs");
-                          }
-                          /*ProfilClass profil = ProfilClass(
-                            isGroup: isGroup,
-                            firstName: isGroup ? null : firstName,
-                            lastName: isGroup ? null : lastName,
-                            groupName: isGroup ? groupName : null,
-                            studentClass: studentClass,
-                            studentCount: isGroup ? studentCount : null,
-                            adresse: adresse,
-                          );*/
-                        },
-                        child: isDelayed
-                            ? const CircularProgressIndicator(color: Colors.white,)
-                            : const Text('Enregistrer'),
+                            /*ProfilClass profil = ProfilClass(
+                              isGroup: isGroup,
+                              firstName: isGroup ? null : firstName,
+                              lastName: isGroup ? null : lastName,
+                              groupName: isGroup ? groupName : null,
+                              studentClass: studentClass,
+                              studentCount: isGroup ? studentCount : null,
+                              adresse: adresse,
+                            );*/
+                          },
+                          child: isDelayed
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                              : Text(isAnormal ? "Demander le cours" : 'Créer'),
+                        ),
                       ),
                     ],
                   ),

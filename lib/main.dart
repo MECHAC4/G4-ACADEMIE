@@ -70,7 +70,7 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       title: appName,
       theme: lightMode,
-      home: FutureBuilder(future:loadCache() , builder: (context, snapshot) {
+      home: /*const OTPVerificationPage(email: "joseadjovi67@gmail.com", phoneNumber: null,)*/FutureBuilder(future:loadCache() , builder: (context, snapshot) {
         if(snapshot.connectionState == ConnectionState.waiting){
           return const WelcomeScreen();
         }else{

@@ -13,3 +13,18 @@ List<String> monthList = [
   'novembre',
   'décembre'
 ];
+
+final List<String> classes = [
+  'CP',
+  'CE1',
+  'CE2',
+  'CM1',
+  'CM2',
+  '6ème',
+  '5ème',
+  '4ème',
+  '3ème',
+  '2nd',
+  '1ère',
+  'Terminale'
+];

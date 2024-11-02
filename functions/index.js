@@ -1,6 +1,8 @@
 import admin from 'firebase-admin';
 import functions from 'firebase-functions';
 import { DateTime } from 'luxon';
+import nodemailer from 'nodemailer';
+
 //import { firestore } from 'firebase-admin';
 
 
@@ -484,41 +486,273 @@ export const scheduledPayment = functions.pubsub
 
         // Créer l'objet DateTime actuel
         const currentTimestamp = DateTime.now().toISO();
+        const epo = (Date.now()+3600*1000).toString();//DateTime.now().toString();
+        const adminId = 'rY33iKsQgGew8akQ4ILyULwrYSt2';
+        const groupChatId1 = 'rY33iKsQgGew8akQ4ILyULwrYSt2'+'-'+userId;
+        const groupChatId2 = userId+'-'+'rY33iKsQgGew8akQ4ILyULwrYSt2';
+
+        admin.firestore().collection('messages').doc(groupChatId1).collection(groupChatId1).doc(epo).set(
+          {
+            content:'Bienvenu sur G4 ACADEMIE!\nPosez nous toutes vos préocupations ici.',
+            idFrom: adminId,
+            idTo: userId,
+            timestamp: epo,
+            type: 0
+          }
+        ).then(() => {
+          console.log(`Document mis à jour avec lastMessageTimestamp pour l'utilisateur ${userId}`);
+      }).catch((error) => {
+          console.error("Erreur lors de la mise à jour du document :", error);
+      });
+
+        admin.firestore().collection('messages').doc(groupChatId2).collection(groupChatId2).doc(epo).set(
+          {
+            content:'Bienvenu sur G4 ACADEMIE!\nPosez nous toutes vos préocupations ici.',
+            idFrom: adminId,
+            idTo: userId,
+            timestamp: epo,
+            type: 0
+          }
+        ).then(() => {
+          console.log(`Document mis à jour avec lastMessageTimestamp pour l'utilisateur ${userId}`);
+      }).catch((error) => {
+          console.error("Erreur lors de la mise à jour du document :", error);
+      });
+      return null;
 
         // Mettre à jour le champ lastMessageTimestamp dans le document utilisateur
-        return admin.firestore().collection('users').doc(userId).update({
+        /*return admin.firestore().collection('users').doc(userId).update({
             lastMessageTimestamp: currentTimestamp
         }).then(() => {
             console.log(`Document mis à jour avec lastMessageTimestamp pour l'utilisateur ${userId}`);
         }).catch((error) => {
             console.error("Erreur lors de la mise à jour du document :", error);
-        });
+        });*/
     });
 
 
-  /*export const updateAllUsersLastMessageTimestampScheduled = functions.pubsub.schedule('every 2 minutes').onRun(async (context) => {
-    console.log('Mise à jour de lastMessageTimestamp pour tous les utilisateurs');
-  
-    try {
-      const usersSnapshot = await firestore.collection('users').get();
-      const batch = firestore.batch();
-  
-      // Parcourez chaque document d'utilisateur
-      usersSnapshot.forEach((doc) => {
-        const userId = doc.id;
-        const userData = doc.data();
-  
-        // Ici, nous mettons simplement à jour avec un timestamp fictif (par exemple, la date actuelle)
-        const lastMessageTimestamp = new Date().toISOString(); // Remplacez ceci par votre logique de récupération
-  
-        batch.update(doc.ref, { lastMessageTimestamp });
-        console.log(`Document de l'utilisateur ${userId} mis à jour avec lastMessageTimestamp : ${lastMessageTimestamp}`);
-      });
-  
-      await batch.commit();
-      console.log('Mise à jour réussie pour tous les utilisateurs.');
-    } catch (error) {
-      console.error('Erreur lors de la mise à jour des utilisateurs :', error);
-    }
-  });*/
+    export const updateUserBalance = functions.firestore
+    .document('users/{userId}/profiles/{profileId}/courses/{courseId}/request_payment/{paymentId}')
+    .onWrite(async (change, context) => {
+        const paymentData = change.after.exists ? change.after.data() : null;
+        const previousPaymentData = change.before.exists ? change.before.data() : null;
 
+        // Ignore the change if it doesn't modify the 'state' or it's deleted
+        if (!paymentData || (previousPaymentData && paymentData.state === previousPaymentData.state)) {
+            return null;
+        }
+
+        // Only process if the payment's state is 'Unpaid'
+        const userId = context.params.userId;  // Extract userId from the document path
+
+        // Reference to all courses under the user's profiles
+        const profilesRef = admin.firestore().collection(`users/${userId}/profiles`);
+
+        let totalAmountDue = 0;
+
+        try {
+            // Fetch all profiles for the user
+            const profilesSnapshot = await profilesRef.get();
+
+            for (const profileDoc of profilesSnapshot.docs) {
+                const profileId = profileDoc.id;
+                
+                // Reference to all courses under each profile
+                const coursesRef = admin.firestore().collection(`users/${userId}/profiles/${profileId}/courses`);
+                const coursesSnapshot = await coursesRef.get();
+
+                for (const courseDoc of coursesSnapshot.docs) {
+                    const courseId = courseDoc.id;
+
+                    // Reference to request_payment subcollection for each course
+                    const paymentsRef = admin.firestore().collection(`users/${userId}/profiles/${profileId}/courses/${courseId}/request_payment`);
+
+                    // Fetch all unpaid payments
+                    const unpaidPaymentsSnapshot = await paymentsRef.where('state', '==', 'Unpaid').get();
+
+                    unpaidPaymentsSnapshot.forEach(paymentDoc => {
+                        const paymentData = paymentDoc.data();
+                        totalAmountDue += paymentData.amount;
+                    });
+                }
+            }
+
+            // Reference to the 'price' collection for storing the user's total balance
+            const priceRef = admin.firestore().collection('price').doc(userId);
+
+            // Create or update the document with the total balance
+            await priceRef.set({
+                solde: totalAmountDue
+            }, { merge: true }); // Merge in case the document exists
+
+            console.log(`Updated balance for user ${userId}: ${totalAmountDue}`);
+
+        } catch (error) {
+            console.error("Error updating user balance:", error);
+        }
+
+        return null;
+    });
+
+
+    const OTP_EXPIRATION_TIME = 300; // en secondes, ici 5 minutes
+
+// Configurez votre service d'envoi d'email, ici avec nodemailer
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+   host: 'smtp.gmail.com',
+   port: 465,
+   secure: true,
+   auth: {
+    user: 'g4academie@gmail.com',
+    pass: 'ewgg bfkz mjrt sfal',
+   },
+});
+
+// Fonction pour générer un OTP aléatoire
+function generateOtp() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// Cloud Function pour envoyer un OTP
+export const sendOtp = functions.https.onCall(async (data, context) => {
+  console.log("sendOtp - Données reçues:", data);
+  
+  const { email, phoneNumber } = data;
+  
+  const otp = generateOtp();
+  console.log("sendOtp - OTP généré:", otp);
+
+  // Sauvegarde OTP dans Firestore avec une expiration
+  const otpRef = admin.firestore().collection("otps").doc(email || phoneNumber);
+  try {
+    await otpRef.set({
+      otp: otp,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    console.log("sendOtp - OTP sauvegardé dans Firestore pour:", email || phoneNumber);
+
+    if (email) {
+      // Envoie OTP par email
+      await transporter.sendMail({
+        from: "g4academie@gmail.com",
+        to: email,
+        subject: "Votre code OTP",
+        text: `Votre code OTP est ${otp}`,
+      });
+      console.log("sendOtp - OTP envoyé par email à:", email);
+      return { status: "otp_sent_email" };
+    } else if (phoneNumber) {
+      // Envoie OTP par SMS via Firebase Auth
+      let userRecord;
+
+      // Essayer de récupérer l'utilisateur par numéro de téléphone
+      try {
+        userRecord = await admin.auth().getUserByPhoneNumber(phoneNumber);
+        console.log("sendOtp - Utilisateur trouvé:", userRecord.uid);
+      } catch (error) {
+        if (error.code === 'auth/user-not-found') {
+          // Si l'utilisateur n'existe pas, créer un nouvel utilisateur
+          userRecord = await admin.auth().createUser({
+            phoneNumber: `+${phoneNumber}`,
+            // Ajoutez d'autres champs nécessaires si nécessaire, comme `email`, `displayName`, etc.
+          });
+          console.log("sendOtp - Nouvel utilisateur créé:", userRecord.uid);
+        } else {
+          throw error; // Relancer les autres erreurs
+        }
+      }
+
+      // Mettez à jour le numéro de téléphone de l'utilisateur si nécessaire
+      await admin.auth().updateUser(userRecord.uid, {
+        phoneNumber: `+${phoneNumber}`
+      });
+
+      // Envoyez l'OTP (implémentez votre service SMS ici)
+      console.log("sendOtp - OTP envoyé par SMS à:", phoneNumber);
+      return { status: "otp_sent_sms" };
+
+    }
+  } catch (error) {
+    console.error("sendOtp - Erreur lors de l'envoi de l'OTP:", error);
+    throw new functions.https.HttpsError("internal", "Erreur lors de l'envoi de l'OTP.");
+  }
+});
+
+// Cloud Function pour vérifier OTP
+export const verifyOtp = functions.https.onCall(async (data, context) => {
+  console.log("verifyOtp - Données reçues:", data);
+  
+  const { email, phoneNumber, otp } = data;
+  let haveAccount = false;
+  
+  const otpRef = admin.firestore().collection("otps").doc(email || phoneNumber);
+  try {
+    const otpDoc = await otpRef.get();
+    if (!otpDoc.exists) {
+      console.warn("verifyOtp - OTP non trouvé pour:", email || phoneNumber);
+      throw new functions.https.HttpsError("not-found", "OTP non trouvé.");
+    }
+
+    const { otp: storedOtp, createdAt } = otpDoc.data();
+    console.log("verifyOtp - OTP stocké trouvé:", storedOtp);
+
+    // Vérifiez si OTP a expiré
+    const now = admin.firestore.Timestamp.now();
+    if (now.seconds - createdAt.seconds > OTP_EXPIRATION_TIME) {
+      console.warn("verifyOtp - OTP expiré pour:", email || phoneNumber);
+      throw new functions.https.HttpsError("deadline-exceeded", "OTP expiré.");
+    }
+
+    if (storedOtp !== otp) {
+      console.warn("verifyOtp - OTP invalide pour:", email || phoneNumber);
+      throw new functions.https.HttpsError("invalid-argument", "OTP invalide.");
+    }
+
+    // Supprimez OTP après vérification réussie
+    await otpRef.delete();
+    console.log("verifyOtp - OTP supprimé après vérification réussie pour:", email || phoneNumber);
+
+    // Enregistrement de l'utilisateur ou connexion
+    let user;
+    if (email) {
+      try {
+        // Essayer de récupérer l'utilisateur par email
+        user = await admin.auth().getUserByEmail(email);
+        haveAccount = true;
+        console.log("verifyOtp - Utilisateur trouvé par email:", user.uid);
+        //return { status: "user_verified", userId: user.uid };
+      } catch (error) {
+        if (error.code === 'auth/user-not-found') {
+          // Si l'utilisateur n'existe pas, créez un nouvel utilisateur avec un mot de passe par défaut
+          const defaultPassword = email + 'g4academieDefaultPassword';
+          user = await admin.auth().createUser({
+            email: email,
+            password: defaultPassword,
+          });
+          console.log("verifyOtp - Nouvel utilisateur créé:", user.uid);
+        } else {
+          // Relancer les autres erreurs
+          throw error;
+        }
+      }
+    } else if (phoneNumber) {
+      user = await admin.auth().getUserByPhoneNumber(`+${phoneNumber}`);
+      console.log("verifyOtp - Utilisateur trouvé par numéro de téléphone:", user.uid);
+    }
+
+    // Génération du token pour connecter l'utilisateur
+    const customToken = await admin.auth().createCustomToken(user.uid);
+    console.log("verifyOtp - Token personnalisé généré pour:", user.uid);
+     console.log("verifyotp - UserToken: ******************************: ", customToken);
+    return {token: customToken , userExist: haveAccount};
+  } catch (error) {
+    console.error("verifyOtp - Erreur lors de la vérification de l'OTP:", error);
+    throw new functions.https.HttpsError("internal", "Erreur lors de la vérification de l'OTP.");
+  }
+});
+
+
+
+
+    

@@ -22,6 +22,7 @@ class GoogleSignUp extends StatefulWidget {
 class _GoogleSignUpState extends State<GoogleSignUp> {
   final _formSignupKey = GlobalKey<FormState>();
   bool agreePersonalData = true;
+  String? studentClass;
 
   final TextEditingController nomController = TextEditingController();
   final TextEditingController prenomController = TextEditingController();
@@ -367,7 +368,31 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
                                 height: 25,
                               ),
                             if (_selectedUserType == usersType[0])
-                              TextFormField(
+                              DropdownButtonFormField<String>(
+                                decoration: InputDecoration(
+                                  labelText: 'Sélectionner une classe',
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10)),
+                                ),
+                                //hint: const Text("Sélectionner une classe"),
+                                value: studentClass,
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    if (newValue != null) {
+                                      studentClass = newValue;
+                                      studentClassController.text = newValue;
+                                    }
+                                  });
+                                },
+                                items: classes.map((String className) {
+                                  return DropdownMenuItem<String>(
+                                    value: className,
+                                    child: Text(className),
+                                  );
+                                }).toList(),
+                              ),
+
+                            /*TextFormField(
                                 controller: studentClassController,
                                 validator: (value) {
                                   if (_selectedUserType == usersType[0] &&
@@ -397,7 +422,7 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
-                              ),
+                              ),*/
                           ],
                         ),
                       ),

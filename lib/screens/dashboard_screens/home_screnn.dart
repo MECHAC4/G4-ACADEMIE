@@ -47,7 +47,7 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
       ProfilServices().saveProfileToFirestore({
         'firstName': _appUser.firstName,
         'lastName': _appUser.lastName,
-        'studentClass': _appUser.studentClass,
+        'studentClass': _appUser.studentClass ?? 'Particulière',
         'adresse': _appUser.address,
       }, _appUser.id);
     }
@@ -101,7 +101,11 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
                     return DropdownMenuItem<ProfilClass>(
                       value: profile,
                       child: Text(
-                        '${profile.firstName} ${profile.lastName}',
+                          '  ${profile.firstName} ${profile.lastName}'
+                              .trim() ==
+                              '${widget.appUser.firstName} ${widget.appUser.lastName}'
+                              ? 'Profil principal'
+                              : '  ${profile.firstName} ${profile.lastName}',
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                       ),
                     );

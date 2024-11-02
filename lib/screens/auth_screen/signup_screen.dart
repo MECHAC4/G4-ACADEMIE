@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:g4_academie/constants.dart';
 import 'package:g4_academie/screens/auth_screen/google_signup_screen.dart';
+import 'package:g4_academie/screens/auth_screen/otp_screen.dart';
 import 'package:g4_academie/screens/auth_screen/signin_screen.dart';
 import 'package:g4_academie/services/auth_services.dart';
 import 'package:g4_academie/services/cache/cache_service.dart';
@@ -13,6 +14,8 @@ import '../../app_UI.dart';
 import '../../services/verification.dart';
 import '../../theme/theme.dart';
 import '../../widgets/custom_scaffold.dart';
+import '../../widgets/marquee.dart';
+import '../dashboard_screens/builder/add_cours_builder.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -33,6 +36,7 @@ class _SignUpScreenState extends State<SignUpScreen>
 
   final TextEditingController nomController = TextEditingController();
   final TextEditingController prenomController = TextEditingController();
+
   //final TextEditingController adresseController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
@@ -43,8 +47,7 @@ class _SignUpScreenState extends State<SignUpScreen>
   bool isP1View = true;
   bool isP2View = true;
   bool isPhoneVer = false;
-
-
+  String? studentClass;
 
   @override
   void dispose() {
@@ -111,15 +114,11 @@ class _SignUpScreenState extends State<SignUpScreen>
                       const SizedBox(
                         height: 40.0,
                       ),
-                      Text(
-                        'Inscription',
-                        style: TextStyle(
-                          fontSize: height / 35,
-                          //fontWeight: FontWeight.w900,
-                          color: lightColorScheme.primary,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
+
+                      StatefulBuilder(builder: (context, setState) {
+                        return const ZigZagMarquee(text: 'INSCRIPTION',);
+                      },),
+
                       // full name
                       DefaultTabController(
                         length: 2,
@@ -131,13 +130,34 @@ class _SignUpScreenState extends State<SignUpScreen>
                             TabBar(
                               onTap: (value) => setState(() {}),
                               controller: _tabController,
-                              tabs: const [
-                                Text("Avec email"),
-                                Text("Avec téléphone"),
+                              tabs: [
+                                TextButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _tabController.index = 0;
+                                    });
+                                  },
+                                  style: TextButton.styleFrom(elevation: 10,padding: const EdgeInsets.only(bottom: 0, top: 15)),
+                                  child:  Text("Avec téléphone",
+                                      style: TextStyle(fontSize: 20, fontWeight:_tabController.index ==0? FontWeight.w900: null, color: _tabController.index == 0? lightColorScheme.primary: lightColorScheme.secondary)),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _tabController.index = 1;
+                                    });
+                                  },
+                                  style: TextButton.styleFrom(elevation: 10,padding: const EdgeInsets.only(bottom: 0, top: 15)),
+                                  child:  Text("Avec email",
+                                      style: TextStyle(fontSize: 20, fontWeight:_tabController.index ==1? FontWeight.w900: null, color: _tabController.index == 1? lightColorScheme.primary: lightColorScheme.secondary)),
+                                )
                               ],
+                              //indicatorPadding: EdgeInsets.only(bottom: 0),
+                              isScrollable: true,
                               indicatorWeight: 5,
                               indicatorSize: TabBarIndicatorSize.tab,
-                              padding: const EdgeInsets.only(bottom: 20),
+                              automaticIndicatorColorAdjustment: true,
+                              padding: const EdgeInsets.only(bottom: 16),
                             ),
                             TextFormField(
                               controller: nomController,
@@ -203,25 +223,6 @@ class _SignUpScreenState extends State<SignUpScreen>
                               ),
                             ),
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                             const SizedBox(
                               height: 25.0,
                             ),
@@ -242,33 +243,19 @@ class _SignUpScreenState extends State<SignUpScreen>
                                 border: OutlineInputBorder(
                                   borderSide: const BorderSide(
                                     color:
-                                    Colors.black12, // Default border color
+                                        Colors.black12, // Default border color
                                   ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderSide: const BorderSide(
                                     color:
-                                    Colors.black12, // Default border color
+                                        Colors.black12, // Default border color
                                   ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
                             ),
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
                             const SizedBox(
                               height: 25.0,
@@ -400,17 +387,39 @@ class _SignUpScreenState extends State<SignUpScreen>
                                 ),
                               ),
 
-
-
-                            if(_selectedUserType == usersType[0])
+                            if (_selectedUserType == usersType[0])
                               const SizedBox(
                                 height: 25,
                               ),
-                            if(_selectedUserType == usersType[0])
-                              TextFormField(
+                            if (_selectedUserType == usersType[0])
+                              DropdownButtonFormField<String>(
+                                decoration: InputDecoration(
+                                  labelText: 'Sélectionner une classe',
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10)),
+                                ),
+                                //hint: const Text("Sélectionner une classe"),
+                                value: studentClass,
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    if (newValue != null) {
+                                      studentClass = newValue;
+                                      studentClassController.text = newValue;
+                                    }
+                                  });
+                                },
+                                items: classes.map((String className) {
+                                  return DropdownMenuItem<String>(
+                                    value: className,
+                                    child: Text(className),
+                                  );
+                                }).toList(),
+                              ),
+                              /*TextFormField(
                                 controller: studentClassController,
                                 validator: (value) {
-                                  if (_selectedUserType == usersType[0] && (value == null || value.isEmpty)) {
+                                  if (_selectedUserType == usersType[0] &&
+                                      (value == null || value.isEmpty)) {
                                     return 'Entrez votre classe';
                                   }
                                   return null;
@@ -423,41 +432,34 @@ class _SignUpScreenState extends State<SignUpScreen>
                                   ),
                                   border: OutlineInputBorder(
                                     borderSide: const BorderSide(
-                                      color:
-                                      Colors.black12, // Default border color
+                                      color: Colors
+                                          .black12, // Default border color
                                     ),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderSide: const BorderSide(
-                                      color:
-                                      Colors.black12, // Default border color
+                                      color: Colors
+                                          .black12, // Default border color
                                     ),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
-                              ),
-
-
-
-
-
-
-
+                              ),*/
 
                             const SizedBox(
                               height: 25.0,
                             ),
 
                             // email
-                            _tabController.index == 0
+                            _tabController.index == 1
                                 ? TextFormField(
                                     controller: emailController,
                                     keyboardType: TextInputType.emailAddress,
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return "Entrez votre email, s'il vous plaît";
-                                      } else if (_tabController.index == 0 &&
+                                      } else if (_tabController.index == 1 &&
                                           !isValidEmail(emailController.text)) {
                                         return "Entrez une adresse email valide";
                                       }
@@ -525,34 +527,37 @@ class _SignUpScreenState extends State<SignUpScreen>
                                                   value.isEmpty) {
                                                 return "Entrez votre numéro de téléphone, s'il vous plaît";
                                               } else if (_tabController.index ==
-                                                      1 &&
+                                                      0 &&
                                                   !isValidPhoneNumber(
                                                       phoneNumberController
                                                           .text)) {
                                                 return "Entrez un numéro de téléphone valide";
-                                              } else if (!isPhoneNumberVerified) {
+                                              } /*else if (!isPhoneNumberVerified) {
                                                 return "Vérifiez votre numéro de téléphone";
-                                              }
+                                              }*/
                                               return null;
                                             },
                                             decoration: InputDecoration(
-                                              suffixIcon: TextButton(
+                                              /*suffixIcon: TextButton(
                                                   onPressed: () async {
                                                     if (isValidPhoneNumber(
-                                                        phoneNumberController
-                                                            .text) && !isPhoneVer) {
+                                                            phoneNumberController
+                                                                .text) &&
+                                                        !isPhoneVer) {
                                                       print("Appuyé");
                                                       setState(() {
                                                         isPhoneVer = true;
-                                                        print("Appuyé et changement d'état ? $isPhoneVer");
-
+                                                        print(
+                                                            "Appuyé et changement d'état ? $isPhoneVer");
                                                       });
                                                       uid = await verifyPhoneNumber(
-                                                              context,
-                                                              _countriesNumber +
-                                                                  phoneNumberController
-                                                                      .text);
-                                                      Future.delayed(const Duration(seconds: 4));
+                                                          context,
+                                                          _countriesNumber +
+                                                              phoneNumberController
+                                                                  .text);
+                                                      Future.delayed(
+                                                          const Duration(
+                                                              seconds: 4));
                                                       setState(() {
                                                         (uid == null)
                                                             ? isPhoneNumberVerified =
@@ -561,8 +566,8 @@ class _SignUpScreenState extends State<SignUpScreen>
                                                                 true;
                                                       });
                                                       isPhoneVer = false;
-                                                      print("Appuyé et rechangement d'état ? $isPhoneVer");
-
+                                                      print(
+                                                          "Appuyé et rechangement d'état ? $isPhoneVer");
                                                     }
                                                   },
                                                   child: isPhoneNumberVerified
@@ -572,12 +577,16 @@ class _SignUpScreenState extends State<SignUpScreen>
                                                               lightColorScheme
                                                                   .primary,
                                                         )
-                                                      :isPhoneVer?const Center(child:  CircularProgressIndicator()): const Text(
-                                                          "Vérifier",
-                                                          style: TextStyle(
-                                                              color:
-                                                                  Colors.red),
-                                                        )),
+                                                      : isPhoneVer
+                                                          ? const Center(
+                                                              child:
+                                                                  CircularProgressIndicator())
+                                                          : const Text(
+                                                              "Vérifier",
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .red),
+                                                            )),*/
                                               label: const Text('Téléphone'),
                                               hintText:
                                                   "Entrez votre numéro de téléphone",
@@ -606,7 +615,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                                       ),
                                     ],
                                   ),
-                            const SizedBox(
+                            /*const SizedBox(
                               height: 25.0,
                             ),
                             // password
@@ -621,11 +630,15 @@ class _SignUpScreenState extends State<SignUpScreen>
                                 return null;
                               },
                               decoration: InputDecoration(
-                                suffixIcon: IconButton(onPressed: (){
-                                  setState(() {
-                                    isP1View = !isP1View;
-                                  });
-                                }, icon: Icon(isP1View? Icons.visibility: Icons.visibility_off)),
+                                suffixIcon: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        isP1View = !isP1View;
+                                      });
+                                    },
+                                    icon: Icon(isP1View
+                                        ? Icons.visibility
+                                        : Icons.visibility_off)),
                                 label: const Text('Mot de passe'),
                                 hintText: 'Entrez un mot de passe',
                                 hintStyle: const TextStyle(
@@ -665,11 +678,15 @@ class _SignUpScreenState extends State<SignUpScreen>
                                 return null;
                               },
                               decoration: InputDecoration(
-                                suffixIcon: IconButton(onPressed: (){
-                                  setState(() {
-                                    isP2View = !isP2View;
-                                  });
-                                }, icon: Icon(isP2View? Icons.visibility: Icons.visibility_off)),
+                                suffixIcon: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        isP2View = !isP2View;
+                                      });
+                                    },
+                                    icon: Icon(isP2View
+                                        ? Icons.visibility
+                                        : Icons.visibility_off)),
                                 label: const Text('Retappez le mot de passe'),
                                 hintText: 'Retappez le mot de passe',
                                 hintStyle: const TextStyle(
@@ -690,7 +707,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                            ),
+                            ),*/
                           ],
                         ),
                       ),
@@ -738,8 +755,10 @@ class _SignUpScreenState extends State<SignUpScreen>
                               setState(() {
                                 isSignupWaiting = true;
                               });
-                              _tabController.index == 0
-                                  ? await signUpWithEmail(
+                              Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+                                return OTPVerificationPage(emailOrPhone:_tabController.index ==1? emailController.text.trim():_countriesNumber + phoneNumberController.text.trim(), isPhoneUsed: _tabController.index ==0,haveAccount: false,signInData: AppUser(id: '', firstName: nomController.text.trim(), lastName: prenomController.text.trim(), address: '${villeController.text.trim()}/${quartierController.text.trim()}', userType: _selectedUserType!, emailOrPhone: emailController.text.trim(), password: '',studentClass: studentClassController.text.trim()),);
+                              },));
+                              /*await signUpWithEmail(
                                       context,
                                       emailController.text.trim(),
                                       passwordController.text.trim(),
@@ -749,47 +768,51 @@ class _SignUpScreenState extends State<SignUpScreen>
                                       //adresseController.text,
                                       _selectedUserType!,
                                       subject: subject,
-                                studentClass: studentClassController.text,
-                              )
+                                      studentClass: studentClassController.text,
+                                    )
                                   : await signUpWithPhoneNumber(
                                       context,
                                       phoneNumberController.text.trim(),
                                       passwordController.text.trim(),
                                       nomController.text,
                                       prenomController.text,
-                                '${villeController.text.trim()}/${quartierController.text.trim()}',
+                                      '${villeController.text.trim()}/${quartierController.text.trim()}',
                                       _selectedUserType!,
                                       subject: subject,
-                                studentClass: studentClassController.text,
-                              );
+                                      studentClass: studentClassController.text,
+                                    );
                               setState(() {});
                               setState(() {});
                               setState(() {});
                               setState(() {});
                               if (_appUser != null) {
-                                Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(
-                                  builder: (context) => AppUI(
-                                    appUser: _appUser!,
+                                Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(
+                                    builder: (context) => AppUI(
+                                      appUser: _appUser!,
+                                    ),
                                   ),
-                                ),(route) => false,);/*Navigator.of(context).push(MaterialPageRoute(
+                                  (route) => false,
+                                ); /*Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) => AppUI(
                                     appUser: _appUser!,
                                   ),
                                 ));*/
-                                SignUpDataManager().saveSignUpInfo(_appUser!.id, "canConnect");
-
+                                SignUpDataManager()
+                                    .saveSignUpInfo(_appUser!.id, "canConnect");
                               } else {
                                 setState(() {
                                   isSignupWaiting = false;
                                 });
-                              }
+                              }*/
                             } else if (!agreePersonalData) {
                               showMessage(context,
                                   "Veillez accepter la collecte de donnée personnelle");
                             }
                           },
                           child: isSignupWaiting
-                              ? const CircularProgressIndicator(color : Colors.white)
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white)
                               : const Text('S\'inscrire'),
                         ),
                       ),
@@ -848,7 +871,8 @@ class _SignUpScreenState extends State<SignUpScreen>
                                   ? AppUI(appUser: user!)
                                   : GoogleSignUp(uid: uid!),
                             ));
-                            SignUpDataManager().saveSignUpInfo(uid!, "canConnect");
+                            SignUpDataManager()
+                                .saveSignUpInfo(uid!, "canConnect");
                           } else {
                             showMessage(context,
                                 "Une erreur s'est produite lors de l'authentification avec google");
@@ -917,73 +941,108 @@ class _SignUpScreenState extends State<SignUpScreen>
   List<String> usersType = ["Elève", "Enseignant", "Parent d'élève"];
   bool isSignupWaiting = false;
   bool isGoogleCliked = false;
+  String? matiere;
+
 
   void addSubject(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          content: SizedBox(
-            height: MediaQuery.of(context).size.height / 4,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextFormField(
-                  controller: subjectController,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Veillez entrer une matière';
-                    }
-                    return null;
-                  },
-                  decoration: InputDecoration(
-                    label: const Text('Matière'),
-                    hintText: 'Entrez une matière',
-                    hintStyle: const TextStyle(
-                      color: Colors.black26,
-                    ),
-                    border: OutlineInputBorder(
-                      borderSide: const BorderSide(
-                        color: Colors.black12, // Default border color
-                      ),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(
-                        color: Colors.black12, // Default border color
-                      ),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return StatefulBuilder(
+          builder: (context,setState) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              content: SizedBox(
+                height: MediaQuery.of(context).size.height / 4,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text("Annuler")),
-                    TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          setState(() {
-                            subject?.add(subjectController.text);
-                            subjectController.clear();
-                          });
-                        },
-                        child: const Text("Ajouter"))
+                    Container(
+                        decoration: BoxDecoration(
+                            border: Border.all(),
+                            borderRadius: BorderRadius.circular(10)),
+                        child: ListTile(
+                          title: Text(matiere == null
+                              ? "Choisir une matière"
+                              : matiere!),
+                          onTap: () =>setState((){setState((){_openSubjectsDialog(context);});}),
+                          trailing:
+                          const Icon(Icons.keyboard_arrow_down_outlined),
+                        )),
+                    /*TextFormField(
+                      controller: subjectController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Veillez entrer une matière';
+                        }
+                        return null;
+                      },
+                      decoration: InputDecoration(
+                        label: const Text('Matière'),
+                        hintText: 'Entrez une matière',
+                        hintStyle: const TextStyle(
+                          color: Colors.black26,
+                        ),
+                        border: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.black12, // Default border color
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.black12, // Default border color
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),*/
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text("Annuler")),
+                        TextButton(
+                            onPressed: () {
+                                if (matiere != null) {
+                                  Navigator.of(context).pop();
+                                  setState(() {
+                                    subject?.add(matiere!);
+                                  });
+                                  matiere = null;
+                                }else{
+                                  showMessage(context, "Choisissez une matière");
+                                }
+                            },
+                            child: const Text("Ajouter"))
+                      ],
+                    ),
                   ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          }
         );
       },
     );
   }
 
+  void _openSubjectsDialog(BuildContext context) async {
+    final ans = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return const SubjectsDialog();
+      },
+    );
+    setState(() {
+      matiere = ans.toString();
+      //subject?.add(ans.toString());
+    });
+    print("mitiere_selectionné: ${ans.toString()}");
+  }
   final TextEditingController subjectController = TextEditingController();
 
   Future<void> signUpWithEmail(
@@ -994,7 +1053,8 @@ class _SignUpScreenState extends State<SignUpScreen>
       String lastName,
       String address,
       String userType,
-      {List<String>? subject, String? studentClass}) async {
+      {List<String>? subject,
+      String? studentClass}) async {
     _appUser = await AuthService().registerWithEmail(
         context, email, password, firstName, lastName, address, userType,
         subject: subject, studentClass: studentClass);
@@ -1014,7 +1074,8 @@ class _SignUpScreenState extends State<SignUpScreen>
       String lastName,
       String address,
       String userType,
-      {List<String>? subject, String? studentClass}) async {
+      {List<String>? subject,
+      String? studentClass}) async {
     _appUser = await AuthService().registerWithPhone(
         context, uid!, phone, password, firstName, lastName, address, userType,
         subject: subject, studentClass: studentClass);
@@ -1022,7 +1083,6 @@ class _SignUpScreenState extends State<SignUpScreen>
       _appUser = _appUser;
     });
   }
-
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -1039,111 +1099,115 @@ class _SignUpScreenState extends State<SignUpScreen>
       codeSent: (String verificationId, int? resendToken) {
         showMessage(context,
             "Un code de vérification est envoyé au $phone.\nIl sera expiré dans 60 secondes");
-        showDialog(context: context, builder: (context) {
-          final double width = MediaQuery
-              .of(context)
-              .size
-              .width;
-          final double height = MediaQuery
-              .of(context)
-              .size
-              .height;
-          final TextEditingController smsCodeController = TextEditingController();
-          return AlertDialog(
-            backgroundColor: Colors.white,
-            contentPadding: EdgeInsets.symmetric(
-                horizontal: width / 10, vertical: height / 15),
-            content: SizedBox(
-              height: height / 4,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextFormField(
-                    keyboardType: TextInputType.number,
-                    controller: smsCodeController,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Veillez entrer le code de vérification envoyé sur $phone';
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      label: const Text('Code de vérification'),
-                      hintText: 'Entrez le code de vérification',
-                      hintStyle: const TextStyle(
-                        color: Colors.black26,
-                      ),
-                      border: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: Colors.black12, // Default border color
+        showDialog(
+          context: context,
+          builder: (context) {
+            final double width = MediaQuery.of(context).size.width;
+            final double height = MediaQuery.of(context).size.height;
+            final TextEditingController smsCodeController =
+                TextEditingController();
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              contentPadding: EdgeInsets.symmetric(
+                  horizontal: width / 10, vertical: height / 15),
+              content: SizedBox(
+                height: height / 4,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextFormField(
+                      keyboardType: TextInputType.number,
+                      controller: smsCodeController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Veillez entrer le code de vérification envoyé sur $phone';
+                        }
+                        return null;
+                      },
+                      decoration: InputDecoration(
+                        label: const Text('Code de vérification'),
+                        hintText: 'Entrez le code de vérification',
+                        hintStyle: const TextStyle(
+                          color: Colors.black26,
                         ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: Colors.black12, // Default border color
+                        border: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.black12, // Default border color
+                          ),
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        borderRadius: BorderRadius.circular(10),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: const BorderSide(
+                            color: Colors.black12, // Default border color
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
                     ),
-                  ),
-                  TextButton(onPressed: () {
-                    Navigator.of(context).pop();
-                    verifyPhoneNumber(context, phone);
-                  },
-                      child: const Text(
-                          "Renvoyez le code", style: TextStyle(color: Colors
-                          .white))),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ElevatedButton(onPressed: () {
-                        Navigator.of(context).pop();
-                      }, child: const Text(
-                        "Annuler", style: TextStyle(color: Colors.white),)),
-                      ElevatedButton(
-                        onPressed: () async {
-                          PhoneAuthCredential credential = PhoneAuthProvider
-                              .credential(
-                            verificationId: verificationId,
-                            smsCode: smsCodeController.text,
-                          );
-                          try {
-                            await _auth.signInWithCredential(credential);
-                            if (_auth.currentUser != null) {
-                              Navigator.of(context).pop();
-                              setState(() {
-                                isPhoneNumberVerified = true;
-                              });
-                              showMessage(context, "Vérification réussie");
-                            }
-                          } catch (e) {
-                            showMessage(context,
-                                "Échec de la vérification : code invalide");
-                          }
+                    TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          verifyPhoneNumber(context, phone);
                         },
-                        child: const Text(
-                          "Vérifier", style: TextStyle(color: Colors.white),),
-                      ),
-                    ],
-                  ),
-                ],
+                        child: const Text("Renvoyez le code",
+                            style: TextStyle(color: Colors.white))),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text(
+                              "Annuler",
+                              style: TextStyle(color: Colors.white),
+                            )),
+                        ElevatedButton(
+                          onPressed: () async {
+                            PhoneAuthCredential credential =
+                                PhoneAuthProvider.credential(
+                              verificationId: verificationId,
+                              smsCode: smsCodeController.text,
+                            );
+                            try {
+                              await _auth.signInWithCredential(credential);
+                              if (_auth.currentUser != null) {
+                                Navigator.of(context).pop();
+                                setState(() {
+                                  isPhoneNumberVerified = true;
+                                });
+                                showMessage(context, "Vérification réussie");
+                              }
+                            } catch (e) {
+                              showMessage(context,
+                                  "Échec de la vérification : code invalide");
+                            }
+                          },
+                          child: const Text(
+                            "Vérifier",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        },);
+            );
+          },
+        );
       },
       timeout: const Duration(seconds: 61),
-      codeAutoRetrievalTimeout: (
-          String verificationId) { // Code de vérification automatique expiré
+      codeAutoRetrievalTimeout: (String verificationId) {
+        // Code de vérification automatique expiré
         showMessage(context,
             "Le code de vérification est expiré.\nDemandez un nouveau");
       },
     );
-    if(_auth.currentUser?.uid != null && _auth.currentUser!.uid.isNotEmpty) {
+    if (_auth.currentUser?.uid != null && _auth.currentUser!.uid.isNotEmpty) {
       setState(() {
-      isPhoneNumberVerified = true;
-    });
+        isPhoneNumberVerified = true;
+      });
     }
     return _auth.currentUser?.uid;
   }

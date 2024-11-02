@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:g4_academie/screens/chat/chat_screen.dart';
 
 import 'package:g4_academie/screens/dashboard_screens/home_screnn.dart';
-import 'package:g4_academie/screens/demandes/demande.dart';
+//import 'package:g4_academie/screens/demandes/demande.dart';
 import 'package:g4_academie/screens/payment/payment_manager_screen.dart';
 import 'package:g4_academie/screens/payment/teacher_payment_manager.dart';
 import 'package:g4_academie/screens/profil/profil.dart';
+import 'package:g4_academie/screens/school_mouv/school_screen.dart';
 
 import 'package:g4_academie/services/message_service/chat_params.dart';
 import 'package:g4_academie/services/message_service/message_database.dart';
@@ -68,7 +69,9 @@ class _AppUIState extends State<AppUI> {
         ),
          widget.appUser.userType == 'Enseignant' ? TeacherPaymentManager(appUser: widget.appUser,):PaymentManagerScreen(appUser: widget.appUser,),
         //const PaymentScreen(),
-        DemandePage(appUser: widget.appUser,admin: admin),
+        //DemandePage(appUser: widget.appUser,admin: admin),
+          //CoursPage()
+          HomePage2()
       ][_currentIndex],
         Padding(
           padding: const EdgeInsets.only(top: 35.0),

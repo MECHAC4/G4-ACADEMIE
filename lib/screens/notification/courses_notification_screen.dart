@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:g4_academie/app_UI.dart';
 import 'package:intl/intl.dart';
 
 import '../../courses_notification.dart';
@@ -93,6 +94,12 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
             return notificationType33Builder(notification);
           case 11 :
             return notificationType11Builder(notification);
+          case 5:
+            return notificationType5Builder(notification);
+          case 6:
+            return notificationType6Builder(notification);
+          case 66:
+            return notificationType66Builder(notification);
         }
         return null;
 
@@ -100,6 +107,65 @@ class _NotificationsPageState extends State<NotificationsPage> with SingleTicker
     ): const Center(child: Text("Aucune notification"),);
   }
 
+
+
+  Widget notificationType5Builder(CoursesNotification notification){
+    return Card(
+      elevation: 10,
+      child: ListTile(
+        leading: const Icon(Icons.monetization_on, color: Colors.orange,size: 40,),
+        trailing: const Icon(Icons.arrow_forward_ios),
+        title: const Text("Un nouveau paiement est requis pour un de vos cours"),
+        subtitle: Text("Envoyé le: ${DateFormat('dd MMM kk:mm').format(notification.dateEnvoi)}"),
+        onTap: () {
+          _notificationService.marquerCommeVue(notification.id);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AppUI(appUser: widget.appUser, index: 2,)),
+          );
+        },
+      ),
+    );
+  }
+
+
+  Widget notificationType6Builder(CoursesNotification notification){
+    return Card(
+      elevation: 10,
+      child: ListTile(
+        leading: const Icon(Icons.monetization_on, color: Colors.green,size: 40,),
+        trailing: const Icon(Icons.arrow_forward_ios),
+        title: const Text("Votre demande de paiement paiement a été approuvée"),
+        subtitle: Text("Envoyé le: ${DateFormat('dd MMM kk:mm').format(notification.dateEnvoi)}"),
+        onTap: () {
+          _notificationService.marquerCommeVue(notification.id);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AppUI(appUser: widget.appUser, index: 2,)),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget notificationType66Builder(CoursesNotification notification){
+    return Card(
+      elevation: 10,
+      child: ListTile(
+        leading: const Icon(Icons.monetization_on, color: Colors.red,size: 40,),
+        trailing: const Icon(Icons.arrow_forward_ios),
+        title: const Text("Votre demande de paiement paiement a été rejettée.\nVeuillez nous contacter pour plus de détails."),
+        subtitle: Text("Envoyé le: ${DateFormat('dd MMM kk:mm').format(notification.dateEnvoi)}"),
+        onTap: () {
+          _notificationService.marquerCommeVue(notification.id);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AppUI(appUser: widget.appUser, index: 2,)),
+          );
+        },
+      ),
+    );
+  }
 
 
   Widget notificationType1Builder(CoursesNotification notification){

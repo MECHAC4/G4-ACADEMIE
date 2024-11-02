@@ -46,7 +46,7 @@ class Payment {
       'fullName': fullName,
       'amount': amount,
       'transactionId': transactionId,
-      'id': '',
+      'id': id,
       'monthOfTransaction': monthOfTransaction,
       'transactionDateTime': transactionDateTime,
     };

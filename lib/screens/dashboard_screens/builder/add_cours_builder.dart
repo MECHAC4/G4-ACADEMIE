@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:g4_academie/courses_notification.dart';
 import 'package:g4_academie/profil_class.dart';
+import 'package:g4_academie/screens/dashboard_screens/builder/profil_dialog_builder.dart';
 import 'package:g4_academie/services/cours_services.dart';
 import 'package:g4_academie/services/notification_service/courses_not_services.dart';
 import 'package:g4_academie/services/verification.dart';
@@ -12,9 +13,17 @@ import '../../../theme/theme.dart';
 class AddCourseDialog extends StatefulWidget {
   final AppUser appUser;
   final List<ProfilClass> profiles;
+  final ProfilClass? selected;
+  final String? matiere;
+  final String? frequence;
 
   const AddCourseDialog(
-      {super.key, required this.appUser, required this.profiles});
+      {super.key,
+      this.frequence,
+      this.matiere,
+      required this.appUser,
+      required this.profiles,
+      this.selected});
 
   @override
   State<AddCourseDialog> createState() => _AddCourseDialogState();
@@ -23,7 +32,7 @@ class AddCourseDialog extends StatefulWidget {
 class _AddCourseDialogState extends State<AddCourseDialog> {
   final _formKey = GlobalKey<FormState>();
 
-  String subject = '';
+  //String subject = '';
   String studentFullName = '';
   String studentID = '';
   String state = 'Actif';
@@ -68,6 +77,19 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
     super.dispose();
   }
 
+  void _openSubjectsDialog(BuildContext context) async {
+    final ans = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return const SubjectsDialog();
+      },
+    );
+    setState(() {
+      matiere = ans.toString();
+    });
+    print("mitiere_selectionné: $matiere");
+  }
+
   /*void _addWeekDurationField() {
     setState(() {
       _dayControllers.add(TextEditingController());
@@ -78,15 +100,36 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
     });
   }*/
   late String uid;
+  String? matiere;
+  String frequence = "Cours hebdomadaires";
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     uid = widget.appUser.id;
+    selectedProfile = widget.selected;
+    if (widget.matiere != null) {
+      matiere = widget.matiere;
+    }
+    if (widget.frequence != null) {
+      frequence = widget.frequence!;
+    }
+    final lastProfile = widget.profiles.last;
+    if (!(lastProfile.firstName == 'n' &&
+        lastProfile.lastName == 'n' &&
+        lastProfile.studentClass == '' &&
+        lastProfile.adresse == '')) {
+      widget.profiles.add(ProfilClass(
+          id: '',
+          firstName: 'n',
+          lastName: 'n',
+          studentClass: '',
+          adresse: ''));
+    }
   }
 
-  void _clearFields() {
+  /*void _clearFields() {
     for (var controller in _dayControllers) {
       controller.clear();
     }
@@ -102,7 +145,7 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
     for (var controller in _endMinuteControllers) {
       controller.clear();
     }
-  }
+  }*/
 
   ProfilClass? selectedProfile;
 
@@ -150,7 +193,7 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                       Text(
                         selectedProfile == null
                             ? 'Aucun profil sélectionné'
-                            : '${selectedProfile?.firstName} ${selectedProfile?.lastName}',
+                            : '  ${selectedProfile?.firstName} ${selectedProfile?.lastName}',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       DropdownButton<ProfilClass>(
@@ -159,12 +202,14 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                           Icons.keyboard_arrow_down_rounded,
                           //color: lightColorScheme.surface,
                         ),
-                        hint: Text(
-                          'Choisir un profil',
-                          style: TextStyle(
-                            color: lightColorScheme.primary,
-                          ),
-                        ),
+                        hint: selectedProfile == null
+                            ? Text(
+                                'Choisir un profil',
+                                style: TextStyle(
+                                  color: lightColorScheme.primary,
+                                ),
+                              )
+                            : null,
                         onChanged: (ProfilClass? newProfile) {
                           setState(() {
                             selectedProfile = newProfile;
@@ -173,7 +218,27 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                         items: widget.profiles.map((ProfilClass profile) {
                           return DropdownMenuItem<ProfilClass>(
                             value: profile,
-                            child: Text('${profile.firstName} ${profile.lastName}'),
+                            child: profile.firstName != 'n' &&
+                                    profile.lastName != 'n'
+                                ? Text('  ${profile.firstName} ${profile.lastName}'
+                                            .trim() ==
+                                        '${widget.appUser.firstName} ${widget.appUser.lastName}'
+                                    ? 'Profil principal'
+                                    : '  ${profile.firstName} ${profile.lastName}')
+                                : TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                      showProfileDialog(
+                                          context,
+                                          uid,
+                                          widget.appUser.address,
+                                          widget.profiles,
+                                          widget.appUser,
+                                          frequence: frequence,
+                                          isAnormal: true,
+                                          matiere: matiere);
+                                    },
+                                    child: const Text("Nouveau profil")),
                           );
                         }).toList(),
                       ),
@@ -187,7 +252,47 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                 key: _formKey,
                 child: Column(
                   children: [
-                    TextFormField(
+                    DropdownButtonFormField<String>(
+                      items: const [
+                        DropdownMenuItem(
+                          value: "Cours hebdomadaires",
+                          child: Text("Cours hebdomadaires"),
+                        ),
+                        DropdownMenuItem(
+                          value: "Cours intensifs",
+                          child: Text("Cours intensifs"),
+                        )
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          if (value != null) {
+                            frequence = value;
+                          }
+                        });
+                      },
+                      value: frequence,
+                      hint: const Text("Fréquence"),
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 25.0,
+                    ),
+                    Container(
+                        decoration: BoxDecoration(
+                            border: Border.all(),
+                            borderRadius: BorderRadius.circular(10)),
+                        child: ListTile(
+                          title: Text(matiere == null
+                              ? "Choisir une matière"
+                              : matiere!),
+                          onTap: () => _openSubjectsDialog(context),
+                          trailing:
+                              const Icon(Icons.keyboard_arrow_down_outlined),
+                        )),
+                    /*TextFormField(
                       decoration: InputDecoration(
                         labelText: "Matière",
                         hintStyle: const TextStyle(
@@ -215,11 +320,11 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                       onSaved: (value) {
                         subject = value!;
                       },
-                    ),
+                    ),*/
                     const SizedBox(
                       height: 25.0,
                     ),
-                    SwitchListTile(
+                    /*SwitchListTile(
                       //dense: true,
                       visualDensity: VisualDensity.comfortable,
                       title: const Text("Définir le programme du cours"),
@@ -517,14 +622,22 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                             ElevatedButton(
                               onPressed: () {
                                 setState(() {
-
-                                  if(_dayControllers[index].text.isNotEmpty && _startHourControllers[index].text.isNotEmpty && _endHourControllers[index].text.isNotEmpty && _endMinuteControllers[index].text.isNotEmpty){
+                                  if (_dayControllers[index].text.isNotEmpty &&
+                                      _startHourControllers[index]
+                                          .text
+                                          .isNotEmpty &&
+                                      _endHourControllers[index]
+                                          .text
+                                          .isNotEmpty &&
+                                      _endMinuteControllers[index]
+                                          .text
+                                          .isNotEmpty) {
                                     weekDuration.add({
                                       'day': _dayControllers[index].text,
                                       'startTime':
-                                      '${_startHourControllers[index].text}:${_startMinuteControllers[index].text}',
+                                          '${_startHourControllers[index].text}:${_startMinuteControllers[index].text}',
                                       'endTime':
-                                      '${_endHourControllers[index].text}:${_endMinuteControllers[index].text}',
+                                          '${_endHourControllers[index].text}:${_endMinuteControllers[index].text}',
                                     });
                                     _clearFields();
                                   }
@@ -583,7 +696,7 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                           hoursPerWeek = value;
                         },
                       ),
-                    ],
+                    ],*/
                     const SizedBox(height: 20),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -596,21 +709,27 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                         ),
                         ElevatedButton(
                           onPressed: () async {
-                            if (_formKey.currentState!.validate()) {
-                              _formKey.currentState!.save();
-
+                            if (matiere != null && selectedProfile != null) {
+                              //_formKey.currentState!.save();
                               // Collect weekDuration data if program is fixed
                               if ((widget.appUser.userType ==
                                           "Parent d'élève" &&
                                       selectedProfile != null) ||
                                   (widget.appUser.userType == "Elève")) {
-                                if(hoursPerWeek == null){
+                                /*if (hoursPerWeek == null) {
                                   setState(() {
-                                    hoursPerWeek = '${calculateTotalHours(weekDuration)}';
+                                    hoursPerWeek =
+                                        '${calculateTotalHours(weekDuration)}';
                                   });
+                                }*/
+                                if (frequence == "Cours hebdomadaires") {
+                                  hoursPerWeek = "4";
+                                } else {
+                                  hoursPerWeek = "6";
                                 }
                                 // Stocker les informations dans Firestore
-                                String courseId = await CoursServices().saveCoursToFirestore({
+                                String courseId =
+                                    await CoursServices().saveCoursToFirestore({
                                   'adresse': widget.appUser.userType == "Elève"
                                       ? widget.appUser.address
                                       : selectedProfile!.adresse,
@@ -618,7 +737,7 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                                   'profilId': widget.appUser.userType == "Elève"
                                       ? widget.appUser.id
                                       : selectedProfile!.id,
-                                  'subject': subject,
+                                  'subject': matiere,
                                   'studentFullName': widget.appUser.userType ==
                                           "Elève"
                                       ? "${widget.appUser.firstName} ${widget.appUser.lastName}"
@@ -633,10 +752,12 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                                 });
                                 CoursesNotificationService()
                                     .envoyerNotification(CoursesNotification(
-                                  type: 0,
-                                  id: '',
-                                        coursePath: widget.appUser.userType == "Elève"
-                                            ?'${widget.appUser.id}/${widget.appUser.id}/$courseId':'${widget.appUser.id}/${selectedProfile!.id}/$courseId',
+                                        type: 0,
+                                        id: '',
+                                        coursePath: widget.appUser.userType ==
+                                                "Elève"
+                                            ? '${widget.appUser.id}/${widget.appUser.id}/$courseId'
+                                            : '${widget.appUser.id}/${selectedProfile!.id}/$courseId',
                                         nom: widget.appUser.userType == "Elève"
                                             ? widget.appUser.firstName
                                             : selectedProfile!.firstName,
@@ -648,26 +769,29 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                                             widget.appUser.userType == "Elève"
                                                 ? widget.appUser.address
                                                 : selectedProfile!.adresse,
-                                        classe:
-                                            widget.appUser.userType == "Elève"
-                                                ? '${widget.appUser.studentClass}'
-                                                : selectedProfile!.studentClass,
-                                        matiere: subject,
-                                        nombreHeuresParSemaine:
-                                            '$hoursPerWeek',
+                                        classe: widget.appUser.userType ==
+                                                "Elève"
+                                            ? '${widget.appUser.studentClass}'
+                                            : selectedProfile!.studentClass,
+                                        matiere: matiere!,
+                                        nombreHeuresParSemaine: '$hoursPerWeek',
                                         emploiDuTemps: weekDuration,
                                         idFrom: widget.appUser.id,
-                                        idTo: 'rY33iKsQgGew8akQ4ILyULwrYSt2',//'rY33iKsQgGew8akQ4ILyULwrYSt2',
+                                        idTo: 'rY33iKsQgGew8akQ4ILyULwrYSt2',
+                                        //'rY33iKsQgGew8akQ4ILyULwrYSt2',
                                         dateEnvoi: DateTime.now()));
                                 Navigator.of(context).pop();
                                 Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) =>
                                       AppUI(appUser: widget.appUser, index: 0),
                                 ));
-                              } else {
-                                showMessage(context,
-                                    "Veillez choisir un profil ou créez en un");
                               }
+                            } else if (matiere == null) {
+                              showMessage(
+                                  context, "Veillez choisir une matière");
+                            } else {
+                              showMessage(context,
+                                  "Veillez choisir un profil ou créez en un");
                             }
                           },
                           child: const Text("Demander le cours"),
@@ -684,8 +808,7 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
     );
   }
 
-
-  int calculateTotalHours(List<Map<String, String>> weekDuration) {
+/*int calculateTotalHours(List<Map<String, String>> weekDuration) {
     int totalMinutes = 0;
 
     for (var schedule in weekDuration) {
@@ -716,5 +839,112 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
     // Conversion des minutes totales en heures
     int totalHours = totalMinutes ~/ 60;
     return totalHours;
+  }*/
+}
+
+class SubjectsDialog extends StatefulWidget {
+  const SubjectsDialog({super.key});
+
+  @override
+  State<SubjectsDialog> createState() => _SubjectsDialogState();
+}
+
+class _SubjectsDialogState extends State<SubjectsDialog> {
+  final Map<String, List<String>> subjects = {
+    'Sciences': ['Maths', 'PCT', 'SVT'],
+    'Sciences humaines': ['Histoire-géo', 'Philosophie'],
+    'Langues': ['Allemand', 'Anglais', 'Espagnol', 'Français'],
+    'Primaire': ['Aide aux devoirs'],
+    //'Sports': ['Arts Martiaux', 'Athlétisme', 'Cyclisme', 'Danse', 'Fitness', 'Musculation', 'Yoga'],
+    //'Musique': ['Guitare', 'Piano', 'Violon'],
+    'Autres': ['Informatique'],
+  };
+
+  String searchQuery = '';
+  List<String> filteredSubjects = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _updateFilteredSubjects();
+  }
+
+  void _updateFilteredSubjects() {
+    setState(() {
+      filteredSubjects = [];
+      subjects.forEach((category, items) {
+        filteredSubjects.add(category);
+        filteredSubjects.addAll(
+          items.where((subject) =>
+              subject.toLowerCase().contains(searchQuery.toLowerCase())),
+        );
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Choisissez une matière'),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              decoration: const InputDecoration(
+                labelText: 'Rechercher',
+                prefixIcon: Icon(Icons.search),
+              ),
+              onChanged: (query) {
+                setState(() {
+                  searchQuery = query;
+                  _updateFilteredSubjects();
+                });
+              },
+            ),
+            const SizedBox(height: 10),
+            Expanded(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: filteredSubjects.length,
+                itemBuilder: (context, index) {
+                  String item = filteredSubjects[index];
+                  bool isCategory = subjects.containsKey(item);
+
+                  if (isCategory) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Text(
+                        item,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blueAccent),
+                      ),
+                    );
+                  }
+                  return ListTile(
+                    title: Text(item),
+                    onTap: () {
+                      Navigator.of(context)
+                          .pop(item); // Retourne la matière sélectionnée
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context)
+                .pop(); // Ferme la boîte de dialogue sans sélection
+          },
+          child: const Text('Annuler'),
+        ),
+      ],
+    );
   }
 }
