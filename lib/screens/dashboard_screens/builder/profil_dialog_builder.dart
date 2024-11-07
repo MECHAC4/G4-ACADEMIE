@@ -39,14 +39,17 @@ void showProfileDialog(BuildContext context, String uid, String adresse,
   String firstName1 = '';
   String lastName1 = '';
   String studentClass1 = '';
+  String firstName = '';
+  String lastName = '';
+  String? studentClass;
+  String? serie;
 
   showDialog(
     context: context,
     builder: (BuildContext context) {
       //bool isGroup = false;
-      String firstName = '';
-      String lastName = '';
-      String? studentClass;
+
+
 
       return StatefulBuilder(
         builder: (context, setState) {
@@ -153,6 +156,44 @@ void showProfileDialog(BuildContext context, String uid, String adresse,
                               }).toList(),
                             ),
 
+                            const SizedBox(
+                              height: 20,
+                            ),
+
+                            if (studentClass != null &&
+                                classes.indexOf(studentClass!) >=
+                                    classes.indexOf('2nd'))
+                              DropdownButtonFormField(
+                                validator: (value) {
+                                  if(value == null){
+                                    return "Choisir votre série";
+                                  }
+                                  return null;
+                                },
+                                value: serie,
+                                decoration: InputDecoration(
+                                  labelText: 'Sélectionner votre série',
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10)),
+                                ),
+                                isExpanded: true,
+                                items: series.map(
+                                      (String serie) {
+                                    return DropdownMenuItem(
+                                      value: serie,
+                                      child: Text(serie),
+                                    );
+                                  },
+                                ).toList(),
+                                onChanged: (value) {
+                                  setState(
+                                      (){
+                                        serie = value;
+                                      }
+                                  );
+                                },
+                              ),
+
                             /*TextFormField(
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
@@ -192,12 +233,12 @@ void showProfileDialog(BuildContext context, String uid, String adresse,
                                 firstName1 = firstName;
                                 lastName1 = lastName;
                                 studentClass1 = studentClass!;
-                                await ProfilServices().saveProfileToFirestore({
+                                final pid = await ProfilServices().saveProfileToFirestore({
                                   //"isGroup": isGroup,
                                   "firstName": firstName,
                                   "lastName": lastName,
                                   // "groupName": isGroup ? groupName : null,
-                                  "studentClass": studentClass,
+                                  "studentClass": '${studentClass!} ${serie!}',
                                   //"studentCount": isGroup ? studentCount : null,
                                   "adresse": adresse,
                                 }, uid);
@@ -214,7 +255,7 @@ void showProfileDialog(BuildContext context, String uid, String adresse,
                                     ),
                                   ));
                                 }else{
-                                  final pro = ProfilClass(id: '', firstName: firstName1, lastName: lastName1, studentClass: studentClass1, adresse: adresse);
+                                  final pro = ProfilClass(id: pid, firstName: firstName1, lastName: lastName1, studentClass: studentClass1, adresse: adresse);
                                   Navigator.of(context).push(MaterialPageRoute(builder: (context) => AddCourseDialog(appUser: appUser, profiles: profiles,frequence: frequence,matiere: matiere,selected: pro,),));
                                 }
                               } else {
@@ -239,7 +280,7 @@ void showProfileDialog(BuildContext context, String uid, String adresse,
                               ? const CircularProgressIndicator(
                                   color: Colors.white,
                                 )
-                              : Text(isAnormal ? "Demander le cours" : 'Créer'),
+                              : Text(isAnormal ? "Valider" : 'Créer'),
                         ),
                       ),
                     ],

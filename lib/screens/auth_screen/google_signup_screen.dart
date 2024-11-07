@@ -9,6 +9,7 @@ import '../../services/verification.dart';
 import '../../theme/theme.dart';
 import '../../users.dart';
 import '../../widgets/custom_scaffold.dart';
+import '../dashboard_screens/builder/add_cours_builder.dart';
 
 class GoogleSignUp extends StatefulWidget {
   final String uid;
@@ -310,60 +311,94 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
                               ),
                             if (_selectedUserType == usersType[1])
                               Container(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 20),
-                                width: width,
-                                height: subject != [] && subject!.length < 2
-                                    ? 60
-                                    : 100,
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.black26),
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(10)),
-                                ),
-                                child: GridView.builder(
-                                  itemCount: subject!.length < 4
-                                      ? subject!.length + 1
-                                      : subject!.length,
-                                  gridDelegate:
-                                      const SliverGridDelegateWithFixedCrossAxisCount(
-                                          childAspectRatio: 4,
-                                          crossAxisCount: 2),
-                                  itemBuilder: (context, index) {
-                                    return index + 1 != subject!.length + 1
-                                        ? Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                "${subject![index]}  ",
-                                              ),
-                                              IconButton(
-                                                icon: Icon(
-                                                  size: height / 45,
-                                                  Icons.delete,
-                                                  color: Colors.red,
-                                                ),
-                                                onPressed: () {
-                                                  setState(() {
-                                                    subject?.removeAt(index);
-                                                  });
-                                                },
-                                              ),
-                                            ],
-                                          )
-                                        : TextButton(
-                                            onPressed: () {
-                                              setState(() {
-                                                addSubject(context);
-                                              });
-                                            },
-                                            child: const Text(
-                                                "Ajouter une matière"));
-                                  },
-                                ),
+                                  decoration: BoxDecoration(
+                                      border: Border.all(width: 0.6),
+                                      borderRadius: BorderRadius.circular(10)),
+                                  child: ListTile(
+                                    title: Text(matiere == null
+                                        ? "Choisissez votre matière"
+                                        : matiere!),
+                                    onTap: () => setState(() {
+                                      setState(() {
+                                        _openSubjectsDialog(context);
+                                      });
+                                    }),
+                                    trailing: const Icon(
+                                        Icons.keyboard_arrow_down_outlined),
+                                  )),
+
+                            if (_selectedUserType == usersType[0])
+                              const SizedBox(
+                                height: 25,
                               ),
                             if (_selectedUserType == usersType[0])
+                              DropdownButtonFormField<String>(
+                                validator: (value) {
+                                  if(value == null || studentClass == null){
+                                    return "Choisir une classe";
+                                  }
+                                  return null;
+                                },
+                                decoration: InputDecoration(
+                                  labelText: 'Sélectionner votre classe',
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10)),
+                                ),
+                                //hint: const Text("Sélectionner une classe"),
+                                value: studentClass,
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    if (newValue != null) {
+                                      studentClass = newValue;
+                                      studentClassController.text = newValue;
+                                    }
+                                  });
+                                },
+                                items: classes.map((String className) {
+                                  return DropdownMenuItem<String>(
+                                    value: className,
+                                    child: Text(className),
+                                  );
+                                }).toList(),
+                              ),
+
+                            if (_selectedUserType == usersType[0] &&
+                                studentClass != null &&
+                                classes.indexOf(studentClass!) >=
+                                    classes.indexOf('2nd'))
+                              const SizedBox(
+                                height: 25.0,
+                              ),
+                            if (_selectedUserType == usersType[0] &&
+                                studentClass != null &&
+                                classes.indexOf(studentClass!) >=
+                                    classes.indexOf('2nd'))
+                              DropdownButtonFormField(
+                                validator: (value) {
+                                  if(value == null || serie == null){
+                                    return "Choisir votre série";
+                                  }
+                                  return null;
+                                },
+                                value: serie,
+                                decoration: InputDecoration(
+                                  labelText: 'Sélectionner votre série',
+                                  border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10)),
+                                ),
+                                isExpanded: true,
+                                items: series.map(
+                                      (String serie) {
+                                    return DropdownMenuItem(
+                                      value: serie,
+                                      child: Text(serie),
+                                    );
+                                  },
+                                ).toList(),
+                                onChanged: (value) {},
+                              ),
+
+                            /*if (_selectedUserType == usersType[0])
                               const SizedBox(
                                 height: 25,
                               ),
@@ -390,7 +425,7 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
                                     child: Text(className),
                                   );
                                 }).toList(),
-                              ),
+                              ),*/
 
                             /*TextFormField(
                                 controller: studentClassController,
@@ -467,6 +502,7 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
                           onPressed: () async {
                             if (_formSignupKey.currentState!.validate() &&
                                 agreePersonalData) {
+                              studentClassController.text = '${studentClassController.text} ${serie!}';
                               showMessage(context, "Traitement des données");
                               _appUser = await AuthService().registerWithPhone(
                                 context,
@@ -553,6 +589,7 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
     );
   }
 
+  String? serie;
   List<String> usersType = ["Elève", "Enseignant", "Parent d'élève"];
   String? _selectedUserType;
   List<String>? subject = [];
@@ -625,4 +662,21 @@ class _GoogleSignUpState extends State<GoogleSignUp> {
   }
 
   AppUser? _appUser;
+
+String? matiere;
+
+  void _openSubjectsDialog(BuildContext context) async {
+    final ans = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return const SubjectsDialog();
+      },
+    );
+    setState(() {
+      matiere = ans.toString();
+      subject?.add(ans.toString());
+      print("***************$subject***************");
+    });
+    print("mitiere_selectionné: ${ans.toString()}");
+  }
 }

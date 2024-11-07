@@ -14,8 +14,9 @@ import 'builder/profil_dialog_builder.dart';
 class DashboardPage extends StatefulWidget {
   final AppUser appUser;
   final AppUser admin;
+  final bool? redirect;
 
-  const DashboardPage({Key? key, required this.appUser, required this.admin}) : super(key: key);
+  const DashboardPage({Key? key,this.redirect = false, required this.appUser, required this.admin}) : super(key: key);
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -34,6 +35,7 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
     _tabController = TabController(length: 2, vsync: this);
     loadProfiles();
     createMainProfile();
+
   }
 
   void loadProfiles() async {

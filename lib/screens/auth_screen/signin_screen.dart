@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:g4_academie/constants.dart';
 import 'package:g4_academie/screens/auth_screen/forget_passsword_screen.dart';
+import 'package:g4_academie/screens/auth_screen/otp_screen.dart';
 import 'package:g4_academie/screens/auth_screen/signup_screen.dart';
 
 import '../../app_UI.dart';
@@ -27,14 +28,14 @@ class _SignInScreenState extends State<SignInScreen>
     with TickerProviderStateMixin {
   final _formSignInKey = GlobalKey<FormState>();
   bool rememberPassword = true;
-  bool isPhoneNumberVerified = false;
+  //bool isPhoneNumberVerified = false;
   String? uid;
   AppUser? _appUser;
   final TextEditingController phoneNumberController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   bool isPView = true;
-  bool isPhoneVer = false;
+  //bool isPhoneVer = false;
 
   @override
   void dispose() {
@@ -224,9 +225,9 @@ class _SignInScreenState extends State<SignInScreen>
                                           ),
                                           TextFormField(
                                             onChanged: (value) {
-                                              setState(() {
+                                              /*setState(() {
                                                 isPhoneVer = false;
-                                              });
+                                              });*/
                                             },
                                             controller: phoneNumberController,
                                             keyboardType: TextInputType.phone,
@@ -234,14 +235,12 @@ class _SignInScreenState extends State<SignInScreen>
                                               if (value == null ||
                                                   value.isEmpty) {
                                                 return "Entrez votre numéro de téléphone, s'il vous plaît";
-                                              } else if (!isPhoneNumberVerified) {
-                                                return "Vous devez vérifier ce numéro";
                                               }
                                               return null;
                                             },
                                             decoration: InputDecoration(
-                                              suffixIcon: TextButton(
-                                                  onPressed: () async {
+                                              /*suffixIcon: TextButton(
+                                                  /*onPressed: () async {
                                                     if (isValidPhoneNumber(
                                                             phoneNumberController
                                                                 .text) &&
@@ -272,7 +271,7 @@ class _SignInScreenState extends State<SignInScreen>
                                                       });
                                                       isPhoneVer = false;
                                                     }
-                                                  },
+                                                  },*/
                                                   child: isPhoneNumberVerified
                                                       ? Icon(
                                                           Icons.check,
@@ -290,7 +289,7 @@ class _SignInScreenState extends State<SignInScreen>
                                                               style: TextStyle(
                                                                   color: Colors
                                                                       .red),
-                                                            )),
+                                                            )),*/
                                               label: const Text('Téléphone'),
                                               hintText:
                                                   "Entrez votre numéro de téléphone",
@@ -319,7 +318,7 @@ class _SignInScreenState extends State<SignInScreen>
                                       ),
                                     ],
                                   ),
-                            const SizedBox(
+                            /*const SizedBox(
                               height: 25.0,
                             ),
                             TextFormField(
@@ -362,7 +361,7 @@ class _SignInScreenState extends State<SignInScreen>
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                            ),
+                            ),*/
                           ],
                         ),
                       ),
@@ -421,7 +420,10 @@ class _SignInScreenState extends State<SignInScreen>
                                 isSigninWaiting = true;
                               });
                               showMessage(context, "Traitement des données");
-                              if (_tabController.index == 1) {
+                              Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+                                return OTPVerificationPage(isPhoneUsed: _tabController.index==0, emailOrPhone:_tabController.index==0? _countriesNumber+phoneNumberController.text.trim(): emailController.text,haveAccount: true,);
+                              },));
+                              /*if (_tabController.index == 1) {
                                 _appUser = await AuthService().signInWithEmail(
                                     context,
                                     emailController.text,
@@ -433,12 +435,11 @@ class _SignInScreenState extends State<SignInScreen>
                                     _countriesNumber +
                                         phoneNumberController.text,
                                     passwordController.text);
-                              }
+                              }*/
                               setState(() {});
                               if (_appUser != null) {
                                 showMessage(context, "Connexion réussie");
-                                SignUpDataManager()
-                                    .saveSignUpInfo(_appUser!.id, "canConnect");
+
 
                                 /*Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) => AppUI(
@@ -534,16 +535,7 @@ class _SignInScreenState extends State<SignInScreen>
                                 },
                               ),
                               (route) => false,
-                            ); /* Navigator.of(context).push(MaterialPageRoute(
-                              builder: (context) {
-                                if (isSignup) {
-                                  SignUpDataManager().saveSignUpInfo(currentAppUser!.id, "canConnect");
-
-                                  return AppUI(appUser: currentAppUser);
-                                }
-                                return GoogleSignUp(uid: uid!);
-                              },
-                            ));*/
+                            );
                           } else {
                             showMessage(context,
                                 "Une erreur s'est produite lors de l'authentification avec google");
@@ -699,9 +691,6 @@ class _SignInScreenState extends State<SignInScreen>
                               await _auth.signInWithCredential(credential);
                               if (_auth.currentUser != null) {
                                 Navigator.of(context).pop();
-                                setState(() {
-                                  isPhoneNumberVerified = true;
-                                });
                                 showMessage(context, "Vérification réussie");
                               }
                             } catch (e) {
@@ -731,9 +720,7 @@ class _SignInScreenState extends State<SignInScreen>
       },
     );
     if (_auth.currentUser?.uid != null && _auth.currentUser!.uid.isNotEmpty) {
-      setState(() {
-        isPhoneNumberVerified = true;
-      });
+
     }
     return _auth.currentUser?.uid;
   }

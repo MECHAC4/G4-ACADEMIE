@@ -1,6 +1,5 @@
 import 'package:country_code_picker/country_code_picker.dart'
     show CountryCodePicker;
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:g4_academie/constants.dart';
 import 'package:g4_academie/screens/auth_screen/google_signup_screen.dart';
@@ -32,7 +31,7 @@ class _SignUpScreenState extends State<SignUpScreen>
   late TabController _tabController;
   String _countriesNumber = "+229";
   List<String>? subject = [];
-  AppUser? _appUser;
+  String? serie;
 
   final TextEditingController nomController = TextEditingController();
   final TextEditingController prenomController = TextEditingController();
@@ -46,7 +45,7 @@ class _SignUpScreenState extends State<SignUpScreen>
   final TextEditingController quartierController = TextEditingController();
   bool isP1View = true;
   bool isP2View = true;
-  bool isPhoneVer = false;
+  //bool isPhoneVer = false;
   String? studentClass;
 
   @override
@@ -115,9 +114,13 @@ class _SignUpScreenState extends State<SignUpScreen>
                         height: 40.0,
                       ),
 
-                      StatefulBuilder(builder: (context, setState) {
-                        return const ZigZagMarquee(text: 'INSCRIPTION',);
-                      },),
+                      StatefulBuilder(
+                        builder: (context, setState) {
+                          return const ZigZagMarquee(
+                            text: 'INSCRIPTION',
+                          );
+                        },
+                      ),
 
                       // full name
                       DefaultTabController(
@@ -137,9 +140,19 @@ class _SignUpScreenState extends State<SignUpScreen>
                                       _tabController.index = 0;
                                     });
                                   },
-                                  style: TextButton.styleFrom(elevation: 10,padding: const EdgeInsets.only(bottom: 0, top: 15)),
-                                  child:  Text("Avec téléphone",
-                                      style: TextStyle(fontSize: 20, fontWeight:_tabController.index ==0? FontWeight.w900: null, color: _tabController.index == 0? lightColorScheme.primary: lightColorScheme.secondary)),
+                                  style: TextButton.styleFrom(
+                                      elevation: 10,
+                                      padding: const EdgeInsets.only(
+                                          bottom: 0, top: 15)),
+                                  child: Text("Avec téléphone",
+                                      style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: _tabController.index == 0
+                                              ? FontWeight.w900
+                                              : null,
+                                          color: _tabController.index == 0
+                                              ? lightColorScheme.primary
+                                              : lightColorScheme.secondary)),
                                 ),
                                 TextButton(
                                   onPressed: () {
@@ -147,9 +160,19 @@ class _SignUpScreenState extends State<SignUpScreen>
                                       _tabController.index = 1;
                                     });
                                   },
-                                  style: TextButton.styleFrom(elevation: 10,padding: const EdgeInsets.only(bottom: 0, top: 15)),
-                                  child:  Text("Avec email",
-                                      style: TextStyle(fontSize: 20, fontWeight:_tabController.index ==1? FontWeight.w900: null, color: _tabController.index == 1? lightColorScheme.primary: lightColorScheme.secondary)),
+                                  style: TextButton.styleFrom(
+                                      elevation: 10,
+                                      padding: const EdgeInsets.only(
+                                          bottom: 0, top: 15)),
+                                  child: Text("Avec email",
+                                      style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: _tabController.index == 1
+                                              ? FontWeight.w900
+                                              : null,
+                                          color: _tabController.index == 1
+                                              ? lightColorScheme.primary
+                                              : lightColorScheme.secondary)),
                                 )
                               ],
                               //indicatorPadding: EdgeInsets.only(bottom: 0),
@@ -333,68 +356,35 @@ class _SignUpScreenState extends State<SignUpScreen>
                               ),
                             if (_selectedUserType == usersType[1])
                               Container(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 20),
-                                width: width,
-                                height: subject != [] && subject!.length < 2
-                                    ? 60
-                                    : 100,
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.black26),
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(10)),
-                                ),
-                                child: GridView.builder(
-                                  itemCount: subject!.length < 4
-                                      ? subject!.length + 1
-                                      : subject!.length,
-                                  gridDelegate:
-                                      const SliverGridDelegateWithFixedCrossAxisCount(
-                                          childAspectRatio: 4,
-                                          crossAxisCount: 2),
-                                  itemBuilder: (context, index) {
-                                    return index + 1 != subject!.length + 1
-                                        ? Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                "${subject![index]}  ",
-                                              ),
-                                              IconButton(
-                                                icon: Icon(
-                                                  size: height / 45,
-                                                  Icons.delete,
-                                                  color: Colors.red,
-                                                ),
-                                                onPressed: () {
-                                                  setState(() {
-                                                    subject?.removeAt(index);
-                                                  });
-                                                },
-                                              ),
-                                            ],
-                                          )
-                                        : TextButton(
-                                            onPressed: () {
-                                              setState(() {
-                                                addSubject(context);
-                                              });
-                                            },
-                                            child: const Text(
-                                                "Ajouter une matière"));
-                                  },
-                                ),
-                              ),
-
+                                  decoration: BoxDecoration(
+                                      border: Border.all(width: 0.6),
+                                      borderRadius: BorderRadius.circular(10)),
+                                  child: ListTile(
+                                    title: Text(matiere == null
+                                        ? "Choisissez votre matière"
+                                        : matiere!),
+                                    onTap: () => setState(() {
+                                      setState(() {
+                                        _openSubjectsDialog(context);
+                                      });
+                                    }),
+                                    trailing: const Icon(
+                                        Icons.keyboard_arrow_down_outlined),
+                                  )),
                             if (_selectedUserType == usersType[0])
                               const SizedBox(
                                 height: 25,
                               ),
                             if (_selectedUserType == usersType[0])
                               DropdownButtonFormField<String>(
+                                validator: (value) {
+                                  if(value == null || studentClass == null){
+                                    return "Choisir une classe";
+                                  }
+                                  return null;
+                                },
                                 decoration: InputDecoration(
-                                  labelText: 'Sélectionner une classe',
+                                  labelText: 'Sélectionner votre classe',
                                   border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10)),
                                 ),
@@ -415,42 +405,45 @@ class _SignUpScreenState extends State<SignUpScreen>
                                   );
                                 }).toList(),
                               ),
-                              /*TextFormField(
-                                controller: studentClassController,
+                            if (_selectedUserType == usersType[0] &&
+                                studentClass != null &&
+                                classes.indexOf(studentClass!) >=
+                                    classes.indexOf('2nd'))
+                              const SizedBox(
+                                height: 25.0,
+                              ),
+                            if (_selectedUserType == usersType[0] &&
+                                studentClass != null &&
+                                classes.indexOf(studentClass!) >=
+                                    classes.indexOf('2nd'))
+                              DropdownButtonFormField(
                                 validator: (value) {
-                                  if (_selectedUserType == usersType[0] &&
-                                      (value == null || value.isEmpty)) {
-                                    return 'Entrez votre classe';
+                                  if(value == null || serie == null){
+                                    return "Choisir votre série";
                                   }
                                   return null;
                                 },
+                                value: serie,
                                 decoration: InputDecoration(
-                                  label: const Text('Classe'),
-                                  hintText: 'Entrer votre classe',
-                                  hintStyle: const TextStyle(
-                                    color: Colors.black26,
-                                  ),
+                                  labelText: 'Sélectionner votre série',
                                   border: OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                      color: Colors
-                                          .black12, // Default border color
-                                    ),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                      color: Colors
-                                          .black12, // Default border color
-                                    ),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
+                                      borderRadius: BorderRadius.circular(10)),
                                 ),
-                              ),*/
+                                isExpanded: true,
+                                items: series.map(
+                                  (String serie) {
+                                    return DropdownMenuItem(
+                                      value: serie,
+                                      child: Text(serie),
+                                    );
+                                  },
+                                ).toList(),
+                                onChanged: (value) {},
+                              ),
 
                             const SizedBox(
                               height: 25.0,
                             ),
-
                             // email
                             _tabController.index == 1
                                 ? TextFormField(
@@ -516,11 +509,6 @@ class _SignUpScreenState extends State<SignUpScreen>
                                           ),
                                           TextFormField(
                                             controller: phoneNumberController,
-                                            onChanged: (value) {
-                                              setState(() {
-                                                isPhoneVer = false;
-                                              });
-                                            },
                                             keyboardType: TextInputType.phone,
                                             validator: (value) {
                                               if (value == null ||
@@ -532,61 +520,10 @@ class _SignUpScreenState extends State<SignUpScreen>
                                                       phoneNumberController
                                                           .text)) {
                                                 return "Entrez un numéro de téléphone valide";
-                                              } /*else if (!isPhoneNumberVerified) {
-                                                return "Vérifiez votre numéro de téléphone";
-                                              }*/
+                                              }
                                               return null;
                                             },
                                             decoration: InputDecoration(
-                                              /*suffixIcon: TextButton(
-                                                  onPressed: () async {
-                                                    if (isValidPhoneNumber(
-                                                            phoneNumberController
-                                                                .text) &&
-                                                        !isPhoneVer) {
-                                                      print("Appuyé");
-                                                      setState(() {
-                                                        isPhoneVer = true;
-                                                        print(
-                                                            "Appuyé et changement d'état ? $isPhoneVer");
-                                                      });
-                                                      uid = await verifyPhoneNumber(
-                                                          context,
-                                                          _countriesNumber +
-                                                              phoneNumberController
-                                                                  .text);
-                                                      Future.delayed(
-                                                          const Duration(
-                                                              seconds: 4));
-                                                      setState(() {
-                                                        (uid == null)
-                                                            ? isPhoneNumberVerified =
-                                                                false
-                                                            : isPhoneNumberVerified =
-                                                                true;
-                                                      });
-                                                      isPhoneVer = false;
-                                                      print(
-                                                          "Appuyé et rechangement d'état ? $isPhoneVer");
-                                                    }
-                                                  },
-                                                  child: isPhoneNumberVerified
-                                                      ? Icon(
-                                                          Icons.check,
-                                                          color:
-                                                              lightColorScheme
-                                                                  .primary,
-                                                        )
-                                                      : isPhoneVer
-                                                          ? const Center(
-                                                              child:
-                                                                  CircularProgressIndicator())
-                                                          : const Text(
-                                                              "Vérifier",
-                                                              style: TextStyle(
-                                                                  color: Colors
-                                                                      .red),
-                                                            )),*/
                                               label: const Text('Téléphone'),
                                               hintText:
                                                   "Entrez votre numéro de téléphone",
@@ -615,99 +552,6 @@ class _SignUpScreenState extends State<SignUpScreen>
                                       ),
                                     ],
                                   ),
-                            /*const SizedBox(
-                              height: 25.0,
-                            ),
-                            // password
-                            TextFormField(
-                              controller: passwordController,
-                              obscureText: isP1View,
-                              obscuringCharacter: '*',
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Veillez entrer un mot de passe';
-                                }
-                                return null;
-                              },
-                              decoration: InputDecoration(
-                                suffixIcon: IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        isP1View = !isP1View;
-                                      });
-                                    },
-                                    icon: Icon(isP1View
-                                        ? Icons.visibility
-                                        : Icons.visibility_off)),
-                                label: const Text('Mot de passe'),
-                                hintText: 'Entrez un mot de passe',
-                                hintStyle: const TextStyle(
-                                  color: Colors.black26,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                    color:
-                                        Colors.black12, // Default border color
-                                  ),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                    color:
-                                        Colors.black12, // Default border color
-                                  ),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 25.0,
-                            ),
-                            // password
-                            TextFormField(
-                              controller: rePasswordController,
-                              obscureText: isP2View,
-                              obscuringCharacter: '*',
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Veillez retapper le mot de passe';
-                                } else if (rePasswordController.text.trim() !=
-                                    passwordController.text.trim()) {
-                                  return 'Ratapez le même mot de passe';
-                                }
-                                return null;
-                              },
-                              decoration: InputDecoration(
-                                suffixIcon: IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        isP2View = !isP2View;
-                                      });
-                                    },
-                                    icon: Icon(isP2View
-                                        ? Icons.visibility
-                                        : Icons.visibility_off)),
-                                label: const Text('Retappez le mot de passe'),
-                                hintText: 'Retappez le mot de passe',
-                                hintStyle: const TextStyle(
-                                  color: Colors.black26,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                    color:
-                                        Colors.black12, // Default border color
-                                  ),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                    color:
-                                        Colors.black12, // Default border color
-                                  ),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                            ),*/
                           ],
                         ),
                       ),
@@ -750,61 +594,38 @@ class _SignUpScreenState extends State<SignUpScreen>
                         child: ElevatedButton(
                           onPressed: () async {
                             if (_formSignupKey.currentState!.validate() &&
-                                agreePersonalData) {
+                                agreePersonalData && _selectedUserType!=null) {
+                              if (_selectedUserType == usersType[0]) {
+                                studentClassController.text ='${studentClassController.text} ${serie!}';
+                              }
                               showMessage(context, "Traitement des données");
                               setState(() {
                                 isSignupWaiting = true;
                               });
-                              Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-                                return OTPVerificationPage(emailOrPhone:_tabController.index ==1? emailController.text.trim():_countriesNumber + phoneNumberController.text.trim(), isPhoneUsed: _tabController.index ==0,haveAccount: false,signInData: AppUser(id: '', firstName: nomController.text.trim(), lastName: prenomController.text.trim(), address: '${villeController.text.trim()}/${quartierController.text.trim()}', userType: _selectedUserType!, emailOrPhone: emailController.text.trim(), password: '',studentClass: studentClassController.text.trim()),);
-                              },));
-                              /*await signUpWithEmail(
-                                      context,
-                                      emailController.text.trim(),
-                                      passwordController.text.trim(),
-                                      nomController.text,
-                                      prenomController.text,
-                                      '${villeController.text.trim()}/${quartierController.text.trim()}',
-                                      //adresseController.text,
-                                      _selectedUserType!,
-                                      subject: subject,
-                                      studentClass: studentClassController.text,
-                                    )
-                                  : await signUpWithPhoneNumber(
-                                      context,
-                                      phoneNumberController.text.trim(),
-                                      passwordController.text.trim(),
-                                      nomController.text,
-                                      prenomController.text,
-                                      '${villeController.text.trim()}/${quartierController.text.trim()}',
-                                      _selectedUserType!,
-                                      subject: subject,
-                                      studentClass: studentClassController.text,
-                                    );
-                              setState(() {});
-                              setState(() {});
-                              setState(() {});
-                              setState(() {});
-                              if (_appUser != null) {
-                                Navigator.of(context).pushAndRemoveUntil(
-                                  MaterialPageRoute(
-                                    builder: (context) => AppUI(
-                                      appUser: _appUser!,
-                                    ),
-                                  ),
-                                  (route) => false,
-                                ); /*Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => AppUI(
-                                    appUser: _appUser!,
-                                  ),
-                                ));*/
-                                SignUpDataManager()
-                                    .saveSignUpInfo(_appUser!.id, "canConnect");
-                              } else {
-                                setState(() {
-                                  isSignupWaiting = false;
-                                });
-                              }*/
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) {
+                                  return OTPVerificationPage(
+                                    emailOrPhone: _tabController.index == 1
+                                        ? emailController.text.trim()
+                                        : _countriesNumber +
+                                            phoneNumberController.text.trim(),
+                                    isPhoneUsed: _tabController.index == 0,
+                                    haveAccount: false,
+                                    signInData: AppUser(
+                                        id: '',
+                                        firstName: nomController.text.trim(),
+                                        lastName: prenomController.text.trim(),
+                                        address:
+                                            '${villeController.text.trim()}/${quartierController.text.trim()}',
+                                        userType: _selectedUserType!,
+                                        emailOrPhone:
+                                            emailController.text.trim(),
+                                        password: '',
+                                        studentClass:
+                                            studentClassController.text.trim()),
+                                  );
+                                },
+                              ));
                             } else if (!agreePersonalData) {
                               showMessage(context,
                                   "Veillez accepter la collecte de donnée personnelle");
@@ -942,34 +763,195 @@ class _SignUpScreenState extends State<SignUpScreen>
   bool isSignupWaiting = false;
   bool isGoogleCliked = false;
   String? matiere;
+  final TextEditingController studentClassController = TextEditingController();
 
+  void _openSubjectsDialog(BuildContext context) async {
+    final ans = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return const SubjectsDialog();
+      },
+    );
+    setState(() {
+      matiere = ans.toString();
+      subject?.add(ans.toString());
+      print("***************$subject***************");
+    });
+    print("mitiere_selectionné: ${ans.toString()}");
+  }
 
-  void addSubject(BuildContext context) {
+/*suffixIcon: TextButton(
+                                                  onPressed: () async {
+                                                    if (isValidPhoneNumber(
+                                                            phoneNumberController
+                                                                .text) &&
+                                                        !isPhoneVer) {
+                                                      print("Appuyé");
+                                                      setState(() {
+                                                        isPhoneVer = true;
+                                                        print(
+                                                            "Appuyé et changement d'état ? $isPhoneVer");
+                                                      });
+                                                      uid = await verifyPhoneNumber(
+                                                          context,
+                                                          _countriesNumber +
+                                                              phoneNumberController
+                                                                  .text);
+                                                      Future.delayed(
+                                                          const Duration(
+                                                              seconds: 4));
+                                                      setState(() {
+                                                        (uid == null)
+                                                            ? isPhoneNumberVerified =
+                                                                false
+                                                            : isPhoneNumberVerified =
+                                                                true;
+                                                      });
+                                                      isPhoneVer = false;
+                                                      print(
+                                                          "Appuyé et rechangement d'état ? $isPhoneVer");
+                                                    }
+                                                  },
+                                                  child: isPhoneNumberVerified
+                                                      ? Icon(
+                                                          Icons.check,
+                                                          color:
+                                                              lightColorScheme
+                                                                  .primary,
+                                                        )
+                                                      : isPhoneVer
+                                                          ? const Center(
+                                                              child:
+                                                                  CircularProgressIndicator())
+                                                          : const Text(
+                                                              "Vérifier",
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                      .red),
+                                                            )),*/
+
+/*const SizedBox(
+                              height: 25.0,
+                            ),
+                            // password
+                            TextFormField(
+                              controller: passwordController,
+                              obscureText: isP1View,
+                              obscuringCharacter: '*',
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Veillez entrer un mot de passe';
+                                }
+                                return null;
+                              },
+                              decoration: InputDecoration(
+                                suffixIcon: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        isP1View = !isP1View;
+                                      });
+                                    },
+                                    icon: Icon(isP1View
+                                        ? Icons.visibility
+                                        : Icons.visibility_off)),
+                                label: const Text('Mot de passe'),
+                                hintText: 'Entrez un mot de passe',
+                                hintStyle: const TextStyle(
+                                  color: Colors.black26,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderSide: const BorderSide(
+                                    color:
+                                        Colors.black12, // Default border color
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: const BorderSide(
+                                    color:
+                                        Colors.black12, // Default border color
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 25.0,
+                            ),
+                            // password
+                            TextFormField(
+                              controller: rePasswordController,
+                              obscureText: isP2View,
+                              obscuringCharacter: '*',
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Veillez retapper le mot de passe';
+                                } else if (rePasswordController.text.trim() !=
+                                    passwordController.text.trim()) {
+                                  return 'Ratapez le même mot de passe';
+                                }
+                                return null;
+                              },
+                              decoration: InputDecoration(
+                                suffixIcon: IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        isP2View = !isP2View;
+                                      });
+                                    },
+                                    icon: Icon(isP2View
+                                        ? Icons.visibility
+                                        : Icons.visibility_off)),
+                                label: const Text('Retappez le mot de passe'),
+                                hintText: 'Retappez le mot de passe',
+                                hintStyle: const TextStyle(
+                                  color: Colors.black26,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderSide: const BorderSide(
+                                    color:
+                                        Colors.black12, // Default border color
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: const BorderSide(
+                                    color:
+                                        Colors.black12, // Default border color
+                                  ),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),*/
+
+/*void addSubject(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context,setState) {
-            return AlertDialog(
-              backgroundColor: Colors.white,
-              content: SizedBox(
-                height: MediaQuery.of(context).size.height / 4,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                        decoration: BoxDecoration(
-                            border: Border.all(),
-                            borderRadius: BorderRadius.circular(10)),
-                        child: ListTile(
-                          title: Text(matiere == null
-                              ? "Choisir une matière"
-                              : matiere!),
-                          onTap: () =>setState((){setState((){_openSubjectsDialog(context);});}),
-                          trailing:
-                          const Icon(Icons.keyboard_arrow_down_outlined),
-                        )),
-                    /*TextFormField(
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            backgroundColor: Colors.white,
+            content: SizedBox(
+              height: MediaQuery.of(context).size.height / 4,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                      decoration: BoxDecoration(
+                          border: Border.all(),
+                          borderRadius: BorderRadius.circular(10)),
+                      child: ListTile(
+                        title: Text(
+                            matiere == null ? "Choisir une matière" : matiere!),
+                        onTap: () => setState(() {
+                          setState(() {
+                            _openSubjectsDialog(context);
+                          });
+                        }),
+                        trailing:
+                            const Icon(Icons.keyboard_arrow_down_outlined),
+                      )),
+                  /*TextFormField(
                       controller: subjectController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -997,55 +979,88 @@ class _SignUpScreenState extends State<SignUpScreen>
                         ),
                       ),
                     ),*/
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        TextButton(
-                            onPressed: () {
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text("Annuler")),
+                      TextButton(
+                          onPressed: () {
+                            if (matiere != null) {
                               Navigator.of(context).pop();
-                            },
-                            child: const Text("Annuler")),
-                        TextButton(
-                            onPressed: () {
-                                if (matiere != null) {
-                                  Navigator.of(context).pop();
-                                  setState(() {
-                                    subject?.add(matiere!);
-                                  });
-                                  matiere = null;
-                                }else{
-                                  showMessage(context, "Choisissez une matière");
-                                }
-                            },
-                            child: const Text("Ajouter"))
-                      ],
-                    ),
-                  ],
-                ),
+                              setState(() {
+                                subject?.add(matiere!);
+                              });
+                              matiere = null;
+                            } else {
+                              showMessage(context, "Choisissez une matière");
+                            }
+                          },
+                          child: const Text("Ajouter"))
+                    ],
+                  ),
+                ],
               ),
-            );
-          }
-        );
+            ),
+          );
+        });
       },
     );
-  }
+  }*/
 
-  void _openSubjectsDialog(BuildContext context) async {
-    final ans = await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return const SubjectsDialog();
-      },
-    );
-    setState(() {
-      matiere = ans.toString();
-      //subject?.add(ans.toString());
-    });
-    print("mitiere_selectionné: ${ans.toString()}");
-  }
-  final TextEditingController subjectController = TextEditingController();
+//final TextEditingController subjectController = TextEditingController();
+/*await signUpWithEmail(
+                                      context,
+                                      emailController.text.trim(),
+                                      passwordController.text.trim(),
+                                      nomController.text,
+                                      prenomController.text,
+                                      '${villeController.text.trim()}/${quartierController.text.trim()}',
+                                      //adresseController.text,
+                                      _selectedUserType!,
+                                      subject: subject,
+                                      studentClass: studentClassController.text,
+                                    )
+                                  : await signUpWithPhoneNumber(
+                                      context,
+                                      phoneNumberController.text.trim(),
+                                      passwordController.text.trim(),
+                                      nomController.text,
+                                      prenomController.text,
+                                      '${villeController.text.trim()}/${quartierController.text.trim()}',
+                                      _selectedUserType!,
+                                      subject: subject,
+                                      studentClass: studentClassController.text,
+                                    );
+                              setState(() {});
+                              setState(() {});
+                              setState(() {});
+                              setState(() {});
+                              if (_appUser != null) {
+                                Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(
+                                    builder: (context) => AppUI(
+                                      appUser: _appUser!,
+                                    ),
+                                  ),
+                                  (route) => false,
+                                ); /*Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => AppUI(
+                                    appUser: _appUser!,
+                                  ),
+                                ));*/
+                                SignUpDataManager()
+                                    .saveSignUpInfo(_appUser!.id, "canConnect");
+                              } else {
+                                setState(() {
+                                  isSignupWaiting = false;
+                                });
+                              }*/
 
-  Future<void> signUpWithEmail(
+/*Future<void> signUpWithEmail(
       BuildContext context,
       String email,
       String password,
@@ -1061,12 +1076,11 @@ class _SignUpScreenState extends State<SignUpScreen>
     setState(() {
       _appUser = _appUser;
     });
-  }
+  }*/
 
-  bool isPhoneNumberVerified = false;
-  final TextEditingController studentClassController = TextEditingController();
+//bool isPhoneNumberVerified = false;
 
-  Future<void> signUpWithPhoneNumber(
+/*Future<void> signUpWithPhoneNumber(
       BuildContext context,
       String phone,
       String password,
@@ -1082,11 +1096,105 @@ class _SignUpScreenState extends State<SignUpScreen>
     setState(() {
       _appUser = _appUser;
     });
-  }
+  }*/
+/*TextFormField(
+                                controller: studentClassController,
+                                validator: (value) {
+                                  if (_selectedUserType == usersType[0] &&
+                                      (value == null || value.isEmpty)) {
+                                    return 'Entrez votre classe';
+                                  }
+                                  return null;
+                                },
+                                decoration: InputDecoration(
+                                  label: const Text('Classe'),
+                                  hintText: 'Entrer votre classe',
+                                  hintStyle: const TextStyle(
+                                    color: Colors.black26,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                      color: Colors
+                                          .black12, // Default border color
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                      color: Colors
+                                          .black12, // Default border color
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              ),*/
+/*Container(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 0),
+                                width: width,
+                                height: 60,
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.black26),
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(10)),
+                                ),
+                                child: GridView.builder(
+                                  itemCount: subject!.length < 4
+                                      ? subject!.length + 1
+                                      : subject!.length,
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                          childAspectRatio: 4,
+                                          crossAxisCount: 2),
+                                  itemBuilder: (context, index) {
+                                    return index + 1 != subject!.length + 1
+                                        ? Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "${subject![index]}  ",
+                                              ),
+                                              IconButton(
+                                                icon: Icon(
+                                                  size: height / 45,
+                                                  Icons.delete,
+                                                  color: Colors.red,
+                                                ),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    subject?.removeAt(index);
+                                                  });
+                                                },
+                                              ),
+                                            ],
+                                          )
+                                        : TextButton(
+                                            onPressed: () {
+                                              setState(() {
+                                                //addSubject(context);
+                                              });
+                                            },
+                                            child: ListTile(
+                                              title: Text(matiere == null
+                                                  ? "Choisir une matière"
+                                                  : matiere!, ),
+                                              onTap: () => setState(() {
+                                                setState(() {
+                                                  _openSubjectsDialog(context);
+                                                });
+                                              }),
+                                              trailing: const Icon(Icons
+                                                  .keyboard_arrow_down_outlined),
+                                            ),
+                                          );
+                                  },
+                                ),
+                              ),*/
 
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+//final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  Future<String?> verifyPhoneNumber(BuildContext context, String phone) async {
+/*Future<String?> verifyPhoneNumber(BuildContext context, String phone) async {
     await _auth.verifyPhoneNumber(
       phoneNumber: phone,
       verificationCompleted: (PhoneAuthCredential credential) async {
@@ -1210,5 +1318,5 @@ class _SignUpScreenState extends State<SignUpScreen>
       });
     }
     return _auth.currentUser?.uid;
-  }
+  }*/
 }

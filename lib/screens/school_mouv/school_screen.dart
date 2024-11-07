@@ -17,6 +17,7 @@ class CoursPage extends StatelessWidget {
         title: const Text('Liste des cours', style: TextStyle(color: Colors.white),),
         centerTitle: true,
         backgroundColor: Colors.blueAccent,
+        automaticallyImplyLeading: false,
       ),
       body: ListView.builder(
         itemCount: levels.length,

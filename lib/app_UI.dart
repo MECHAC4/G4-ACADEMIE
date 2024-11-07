@@ -19,8 +19,9 @@ import 'package:g4_academie/widgets/icon_with_badge.dart';
 class AppUI extends StatefulWidget {
   final AppUser appUser;
   final int? index;
+  final bool? redirect;
 
-  const AppUI({super.key, required this.appUser, this.index});
+  const AppUI({super.key, required this.appUser, this.index, this.redirect = false});
 
   @override
   State<AppUI> createState() => _AppUIState();
@@ -61,17 +62,18 @@ class _AppUIState extends State<AppUI> {
       body: Stack(children:[
         [
         DashboardPage(
+          redirect: widget.redirect,
           appUser: widget.appUser,
           admin: admin,
         ),
-        ChatScreen(
+          CoursPage(),
+          ChatScreen(
           chatParams: ChatParams(widget.appUser.id, admin),
         ),
          widget.appUser.userType == 'Enseignant' ? TeacherPaymentManager(appUser: widget.appUser,):PaymentManagerScreen(appUser: widget.appUser,),
         //const PaymentScreen(),
         //DemandePage(appUser: widget.appUser,admin: admin),
-          //CoursPage()
-          HomePage2()
+          //HomePage2()
       ][_currentIndex],
         Padding(
           padding: const EdgeInsets.only(top: 35.0),
@@ -105,6 +107,7 @@ class _AppUIState extends State<AppUI> {
                 return IconWithBadge(icon: Icons.dashboard, badgeCount: snapshot.data!.where((element) => element.estVue == false,).toList().length, iconSize: 25,);
 
               },)/*Icon(Icons.dashboard)*/, label: "Tableau de bord"),
+          const BottomNavigationBarItem(icon: Icon(Icons.school, size: 25,), label: "Cours en ligne"),
           BottomNavigationBarItem(icon: StreamBuilder(stream: MessageDatabaseService().getMessage(ChatParams(widget.appUser.id, admin).getChatGroupId(), 20), builder: (context, snapshot) {
             if(snapshot.connectionState == ConnectionState.waiting){
               return const Icon(Icons.chat, size: 25,);
@@ -124,7 +127,6 @@ class _AppUIState extends State<AppUI> {
           },),
             label: "Discussions",),
           const BottomNavigationBarItem(icon: IconWithBadge(icon: Icons.payment, badgeCount: 1, iconSize: 26,), label: "Payement"),
-          const BottomNavigationBarItem(icon: Icon(Icons.assignment_late, size: 25,), label: "Demandes"),
         ],
         onTap: (value) => setState(() {
           _currentIndex = value;

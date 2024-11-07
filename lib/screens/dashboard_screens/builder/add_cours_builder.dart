@@ -8,6 +8,7 @@ import 'package:g4_academie/services/verification.dart';
 import 'package:g4_academie/users.dart';
 
 import '../../../app_UI.dart';
+import '../../../services/profil_services.dart';
 import '../../../theme/theme.dart';
 
 class AddCourseDialog extends StatefulWidget {
@@ -107,6 +108,7 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    createMainProfile(widget.appUser);
     uid = widget.appUser.id;
     selectedProfile = widget.selected;
     if (widget.matiere != null) {
@@ -115,11 +117,15 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
     if (widget.frequence != null) {
       frequence = widget.frequence!;
     }
-    final lastProfile = widget.profiles.last;
-    if (!(lastProfile.firstName == 'n' &&
-        lastProfile.lastName == 'n' &&
-        lastProfile.studentClass == '' &&
-        lastProfile.adresse == '')) {
+    ProfilClass? lastProfile;
+    if (widget.profiles.isNotEmpty) {
+      lastProfile = widget.profiles.last;
+    }
+    if (lastProfile == null ||
+        !(lastProfile.firstName == 'n' &&
+            lastProfile.lastName == 'n' &&
+            lastProfile.studentClass == '' &&
+            lastProfile.adresse == '')) {
       widget.profiles.add(ProfilClass(
           id: '',
           firstName: 'n',
@@ -149,6 +155,19 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
 
   ProfilClass? selectedProfile;
 
+  void createMainProfile(AppUser appUser) async {
+    bool mainProfilExist =
+        await ProfilServices().profilExist(widget.appUser.id);
+    if (!mainProfilExist) {
+      ProfilServices().saveProfileToFirestore({
+        'firstName': appUser.firstName,
+        'lastName': appUser.lastName,
+        'studentClass': appUser.studentClass ?? 'Particulière',
+        'adresse': appUser.address,
+      }, appUser.id);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -158,11 +177,17 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
         leading: IconButton(
           onPressed: () {
             Navigator.of(context).pop();
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => AppUI(
+                appUser: widget.appUser,
+                index: 0,
+              ),
+            ));
           },
           icon: Icon(Icons.arrow_back_ios_new, color: lightColorScheme.surface),
         ),
         title: Text(
-          "Ajouter un cours",
+          "Demander un cours",
           style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -197,6 +222,7 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       DropdownButton<ProfilClass>(
+                        onTap: () {},
                         underline: const SizedBox(),
                         icon: const Icon(
                           Icons.keyboard_arrow_down_rounded,
@@ -704,6 +730,7 @@ class _AddCourseDialogState extends State<AddCourseDialog> {
                         TextButton(
                           onPressed: () {
                             Navigator.of(context).pop();
+                            Navigator.of(context).push(MaterialPageRoute(builder: (context) => AppUI(appUser: widget.appUser, index: 0,),));
                           },
                           child: const Text("Annuler"),
                         ),

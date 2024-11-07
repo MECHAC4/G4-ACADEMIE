@@ -3,14 +3,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../profil_class.dart';
 
 class ProfilServices {
-  Future<void> saveProfileToFirestore(
+  Future<String> saveProfileToFirestore(
       Map<String, dynamic> profil, String userId) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     CollectionReference users = firestore.collection('users');
+    String id = '';
 
     bool isMainProfileExist = await profilExist(userId);
-
-    isMainProfileExist? await users
+     isMainProfileExist?  await users
         .doc(userId)
         .collection('profil')
         .add({
@@ -22,7 +22,10 @@ class ProfilServices {
           //'studentCount': profil["studentCount"],
           'adresse': profil["adresse"],
         })
-        .then((value) => print("Profil ajouté"))
+        .then((value) {
+          id = value.id;
+          return print("Profil ajouté");
+        })
         .catchError((error) => print("Erreur: $error")):users.doc(userId).collection('profil').doc(userId).set(
         {
           //'isGroup': profil["isGroup"],
@@ -33,8 +36,12 @@ class ProfilServices {
           //'studentCount': profil["studentCount"],
           'adresse': profil["adresse"],
         }
-    ).then((value) => print("Profil ajouté"))
-        .catchError((error) => print("Erreur: $error"));
+    ).then((value) {
+      print("Profil ajouté");
+    });
+        //.catchError((error) => print("Erreur: $error"));
+    print("**********$id***********");
+     return id;
   }
 
 
